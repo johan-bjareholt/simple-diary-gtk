@@ -1,0 +1,27 @@
+app-id: org.johanbjare.SimpleDiary
+runtime: org.gnome.Platform
+runtime-version: '3.38'
+sdk: org.gnome.Sdk
+command: simple-diary
+modules:
+  - name: md4c
+    buildsystem: cmake
+    sources:
+      - type: git
+        url: https://github.com/mity/md4c.git
+  - name: simple-diary
+    buildsystem: meson
+    sources:
+      - type: dir
+        path: .
+finish-args:
+  # Wayland access
+  - --socket=wayland
+  # fallback to X11 + XShm access
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=dri
+  # Allow session D-Bus
+  - --socket=session-bus
+  # Needs to save files locally
+  - --filesystem=host

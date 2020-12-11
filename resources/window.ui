@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.1 -->
+<interface>
+  <requires lib="gtk+" version="3.22"/>
+  <template class="DiaryWindow" parent="GtkApplicationWindow">
+    <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Template Window</property>
+    <property name="default-width">640</property>
+    <property name="default-height">480</property>
+    <child>
+      <object class="GtkStack" id="content_box">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="header_bar">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="title" translatable="yes">Simple Diary</property>
+        <child>
+          <object class="GtkButton" id="header_button">
+            <property name="label" translatable="yes">New</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

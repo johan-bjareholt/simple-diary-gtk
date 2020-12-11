@@ -1,0 +1,4 @@
+build
+build-dir
+*.ui~
+.flatpak-builder

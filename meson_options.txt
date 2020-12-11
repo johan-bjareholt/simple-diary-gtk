@@ -1,0 +1,1 @@
+option('test', type : 'feature', value : 'disabled', description : 'Enable tests')
