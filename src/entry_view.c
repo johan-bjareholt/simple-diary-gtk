@@ -108,18 +108,22 @@ entry_view_load_html (EntryView *self)
 {
   GError *err = NULL;
   gchar *text_md, *text_html, *text_html_full;
+  gchar *folder;
+
+  g_object_get (self->entry, "folder", &folder, NULL);
 
   text_md = entry_read (self->entry, &err);
   text_html = md2html (text_md, &err);
   text_html_full = g_strdup_printf ("<html>\n<body>\n%s\n</body>\n</html>", text_html);
   // TODO: Set relative folder (3rd arg)
-  webkit_web_view_load_html (WEBKIT_WEB_VIEW (self->webview), text_html_full, NULL);
+  webkit_web_view_load_html (WEBKIT_WEB_VIEW (self->webview), text_html_full, folder);
 
   gtk_widget_show_all (GTK_WIDGET (self));
 
   g_free (text_md);
   g_free (text_html);
   g_free (text_html_full);
+  g_free (folder);
 }
 
 static void
