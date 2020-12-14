@@ -104,6 +104,25 @@ delete_button_pressed (GtkButton *button, gpointer user_data)
 }
 
 static void
+entry_view_load_html (EntryView *self)
+{
+  GError *err = NULL;
+  gchar *text_md, *text_html, *text_html_full;
+
+  text_md = entry_read (self->entry, &err);
+  text_html = md2html (text_md, &err);
+  text_html_full = g_strdup_printf ("<html>\n<body>\n%s\n</body>\n</html>", text_html);
+  // TODO: Set relative folder (3rd arg)
+  webkit_web_view_load_html (WEBKIT_WEB_VIEW (self->webview), text_html_full, NULL);
+
+  gtk_widget_show_all (GTK_WIDGET (self));
+
+  g_free (text_md);
+  g_free (text_html);
+  g_free (text_html_full);
+}
+
+static void
 entry_view_init (EntryView *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
@@ -113,27 +132,21 @@ entry_view_init (EntryView *self)
 
   g_signal_connect (self->edit_button, "clicked", (GCallback) edit_button_pressed, self);
   g_signal_connect (self->delete_button, "clicked", (GCallback) delete_button_pressed, self);
+
+  // This is necessary so it's reloaded if you edit an entry and go back
+  g_assert (g_signal_connect (self, "map", (GCallback) entry_view_load_html, NULL) > 0);
 }
 
 GtkWidget *
 entry_view_new (Entry *entry)
 {
-  GError *err = NULL;
   EntryView *self;
 
   self = g_object_new (DIARY_TYPE_ENTRY_VIEW, NULL);
   self->entry = entry;
 
-  gchar *text_md = entry_read (entry, &err);
-  gchar *text_html = md2html (text_md, &err);
-
-  // TODO: move to constructed cb
+  // TODO: move to constructed cb?
   gtk_box_pack_start (GTK_BOX (self), self->webview, TRUE, TRUE, 0);
-  gchar *text_html_full = g_strdup_printf ("<html>\n<body>\n%s\n</body>\n</html>", text_html);
-  // TODO: Set relative folder (3rd arg)
-  webkit_web_view_load_html (WEBKIT_WEB_VIEW (self->webview), text_html_full, NULL);
-
-  gtk_widget_show_all (GTK_WIDGET (self));
 
   return GTK_WIDGET (self);
 }

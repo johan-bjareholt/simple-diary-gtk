@@ -104,7 +104,7 @@ entry_list_init (EntryList *self)
   // We load and unload on ever map/unmap so the entry list is updated in case
   // a entry has been deleted or added
   g_assert (g_signal_connect (self, "map", (GCallback) load_entry_list, NULL) > 0);
-  g_assert (g_signal_connect (self, "unrealize", (GCallback) unload_entry_list, NULL) > 0);
+  g_assert (g_signal_connect (self, "unmap", (GCallback) unload_entry_list, NULL) > 0);
 }
 
 GtkWidget *
