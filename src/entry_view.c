@@ -24,13 +24,14 @@ entry_view_class_init (EntryViewClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-  gtk_widget_class_set_template_from_resource (widget_class, "/com/johan-bjareholt/simple-diary/ui/entry_view.ui");
+  gtk_widget_class_set_template_from_resource (widget_class,
+      "/com/johan-bjareholt/simple-diary/ui/entry_view.ui");
   gtk_widget_class_bind_template_child (widget_class, EntryView, edit_button);
   gtk_widget_class_bind_template_child (widget_class, EntryView, delete_button);
 }
 
 static gboolean
-edit_button_pressed (GtkButton *button, gpointer user_data)
+edit_button_clicked (GtkButton *button, gpointer user_data)
 {
   GtkWidget *entry_edit;
   DiaryWindow *diary_window;
@@ -66,7 +67,7 @@ delete (GtkDialog *dialog, int response, gpointer user_data)
 }
 
 static gboolean
-delete_button_pressed (GtkButton *button, gpointer user_data)
+delete_button_clicked (GtkButton *button, gpointer user_data)
 {
   DiaryWindow *diary_window;
   EntryView *self = (EntryView *) user_data;
@@ -103,6 +104,33 @@ delete_button_pressed (GtkButton *button, gpointer user_data)
   return TRUE;
 }
 
+static gchar *css_classes = "\
+img {\n\
+  max-width: 100%;\n\
+  object-fit: contain;\n\
+  overflow: hidden;\n\
+}\n\
+body {\n\
+  width: 100%;\n\
+  padding: 0;\n\
+  border: 0;\n\
+  margin: 0;\n\
+}\n\
+";
+
+static gchar *html_full_format = "\
+<html>\n\
+<head>\n\
+<style>\n\
+%s\n\
+</style>\n\
+</head>\n\
+<body>\n\
+%s\n\
+</body>\n\
+</html>\n\
+";
+
 static void
 entry_view_load_html (EntryView *self)
 {
@@ -114,12 +142,14 @@ entry_view_load_html (EntryView *self)
 
   text_md = entry_read (self->entry, &err);
   text_html = md2html (text_md, &err);
-  text_html_full = g_strdup_printf ("<html>\n<body>\n%s\n</body>\n</html>", text_html);
-  // TODO: Set relative folder (3rd arg)
-  webkit_web_view_load_html (WEBKIT_WEB_VIEW (self->webview), text_html_full, folder);
+  text_html_full = g_strdup_printf (html_full_format, css_classes, text_html);
+  //g_print (text_html_full);
+  gchar *folder_uri = g_strdup_printf ("file://%s/", folder);
+  webkit_web_view_load_html (WEBKIT_WEB_VIEW (self->webview), text_html_full, folder_uri);
 
   gtk_widget_show_all (GTK_WIDGET (self));
 
+  g_free (folder_uri);
   g_free (text_md);
   g_free (text_html);
   g_free (text_html_full);
@@ -133,9 +163,12 @@ entry_view_init (EntryView *self)
 
   self->entry = NULL;
   self->webview = webkit_web_view_new ();
+  WebKitSettings *s = webkit_settings_new();
+  g_object_set(G_OBJECT(s),"allow-file-access-from-file-urls", TRUE, NULL);
+  webkit_web_view_set_settings(WEBKIT_WEB_VIEW(self->webview),s);
 
-  g_signal_connect (self->edit_button, "clicked", (GCallback) edit_button_pressed, self);
-  g_signal_connect (self->delete_button, "clicked", (GCallback) delete_button_pressed, self);
+  g_signal_connect (self->edit_button, "clicked", (GCallback) edit_button_clicked, self);
+  g_signal_connect (self->delete_button, "clicked", (GCallback) delete_button_clicked, self);
 
   // This is necessary so it's reloaded if you edit an entry and go back
   g_assert (g_signal_connect (self, "map", (GCallback) entry_view_load_html, NULL) > 0);

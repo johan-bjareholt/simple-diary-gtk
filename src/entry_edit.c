@@ -7,6 +7,7 @@ struct _EntryEdit
 
   /* widgets */
   GtkTextView *text_view;
+  GtkButton *add_image_button;
 
   /* properties */
   Entry *entry;
@@ -122,6 +123,13 @@ entry_edit_constructed (GObject *object)
   G_OBJECT_CLASS (entry_edit_parent_class)->constructed (object);
 }
 
+static gboolean
+add_image_button_clicked(GtkButton *button, gpointer user_data)
+{
+  g_print ("Add image\n");
+  return TRUE;
+}
+
 static void
 entry_edit_class_init (EntryEditClass *klass)
 {
@@ -148,6 +156,8 @@ entry_edit_class_init (EntryEditClass *klass)
   gtk_widget_class_set_template_from_resource (widget_class,
       "/com/johan-bjareholt/simple-diary/ui/entry_edit.ui");
   gtk_widget_class_bind_template_child (widget_class, EntryEdit, text_view);
+  gtk_widget_class_bind_template_child (widget_class, EntryEdit,
+      add_image_button);
 }
 
 static void
@@ -155,6 +165,8 @@ entry_edit_init (EntryEdit *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
   g_signal_connect (self, "destroy", (GCallback) entry_edit_save, NULL);
+  g_signal_connect (self->add_image_button, "clicked",
+      (GCallback) add_image_button_clicked, self);
 }
 
 GtkWidget *
