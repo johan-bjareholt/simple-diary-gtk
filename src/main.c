@@ -5,25 +5,12 @@
 #include "utils.h"
 
 static void
-error_dialog(gchar *message)
-{
-  GtkWidget *dialog =
-    gtk_message_dialog_new (NULL,
-                            0,
-                            GTK_MESSAGE_ERROR,
-                            GTK_BUTTONS_CLOSE,
-                            message);
-  gtk_dialog_run (GTK_DIALOG (dialog));
-  gtk_widget_destroy (dialog);
-}
-
-static void
 init(GtkApplication *app)
 {
   gchar *path = utils_get_diary_folder ();
   if (g_mkdir_with_parents (path, 0750) < 0) {
     gchar *msg = g_strdup_printf ("Failed to create diary folder at '%s' because:\n%s", path, strerror(errno));
-    error_dialog(msg);
+    utils_error_dialog(msg);
     g_free (msg);
     return;
   }

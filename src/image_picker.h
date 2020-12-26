@@ -7,4 +7,4 @@
 G_DECLARE_FINAL_TYPE (ImagePicker, image_picker, DIARY, IMAGE_PICKER, GtkDialog)
 
 gboolean
-image_picker_run (gchar **name, gchar **filepath);
+image_picker_run (gchar *date, gchar **name, gchar **filepath);

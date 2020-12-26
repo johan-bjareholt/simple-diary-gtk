@@ -17,6 +17,7 @@ typedef enum
 {
   PROP_FOLDER = 1,
   PROP_FILENAME,
+  PROP_BASENAME,
   PROP_PATH,
   NUM_PROPS,
 } EntryProperties;
@@ -64,8 +65,19 @@ entry_get_property (GObject    *object,
     case PROP_FILENAME:
       g_value_set_string (value, self->filename);
       break;
+    case PROP_BASENAME: {
+      gchar *basename;
+      gchar *last_dot;
+      basename = g_path_get_basename (self->filename);
+      last_dot = strrchr (basename, '.');
+      last_dot[0] = '\0';
+      g_value_set_string (value, basename);
+      g_free (basename);
+      break;
+    }
     case PROP_PATH: {
-      gchar *path = g_strdup_printf ("%s/%s", self->folder, self->filename);
+      gchar *path;
+      path = g_strdup_printf ("%s/%s", self->folder, self->filename);
       g_value_set_string (value, path);
       g_free (path);
       break;
@@ -166,6 +178,12 @@ entry_class_init (EntryClass *klass)
                          "filename",
                          NULL  /* default value */,
                          G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_properties[PROP_BASENAME] =
+    g_param_spec_string ("basename",
+                         "basename",
+                         "basename",
+                         NULL  /* default value */,
+                         G_PARAM_READABLE);
   obj_properties[PROP_PATH] =
     g_param_spec_string ("filepath",
                          "filepath",

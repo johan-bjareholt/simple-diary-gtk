@@ -130,8 +130,11 @@ add_image_button_clicked(GtkButton *button, gpointer user_data)
   EntryEdit *entry_edit = DIARY_ENTRY_EDIT (user_data);
   gchar *image_path;
   gchar *image_name;
+  gchar *basename;
 
-  if (image_picker_run (&image_name, &image_path)) {
+  g_object_get (entry_edit->entry, "basename", &basename, NULL);
+
+  if (image_picker_run (basename, &image_name, &image_path)) {
     gchar *md_image_link;
     GtkTextBuffer *text_buffer;
 

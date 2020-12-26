@@ -59,27 +59,14 @@ copy_file (gchar *src_path, gchar *dest_path, GError **err)
   return ret;
 }
 
-gchar *
-get_photos_dir (void)
-{
-  gchar *diary_folder;
-  gchar *photos_folder;
-
-  diary_folder = utils_get_diary_folder ();
-  photos_folder = g_strdup_printf ("%s/photos", diary_folder);
-
-  g_free (diary_folder);
-
-  return photos_folder;
-}
-
 gboolean
-image_picker_run (gchar **image_name, gchar **image_path)
+image_picker_run (gchar *basename, gchar **image_name, gchar **image_path)
 {
   gint result;
   ImagePicker *image_picker;
   gchar *src_path;
   gchar *target_dir;
+  gchar *image_extension;
   GError *err = NULL;
 
   g_assert (image_name != NULL);
@@ -112,9 +99,11 @@ image_picker_run (gchar **image_name, gchar **image_path)
     g_print ("No file chosen, ignoring\n");
     goto error;
   }
-  target_dir = get_photos_dir ();
+  target_dir = utils_get_photos_folder (basename);
+  image_extension = utils_get_file_extension (src_path);
   *image_name = g_strdup (gtk_entry_get_text (image_picker->name_entry));
-  *image_path = g_strdup_printf ("%s/%s", target_dir, *image_name);
+  *image_path = g_strdup_printf ("%s/%s%s", target_dir, *image_name,
+      image_extension);
   g_free (target_dir);
 
   if (!copy_file (src_path, *image_path, &err)) {
