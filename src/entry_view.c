@@ -110,6 +110,11 @@ img {\n\
   object-fit: contain;\n\
   overflow: hidden;\n\
 }\n\
+table, th, td {\n\
+  border: 0.02em solid black;\n\
+  border-collapse: collapse;\n\
+  padding: 0.2em;\n\
+}\n\
 body {\n\
   width: 100%;\n\
   padding: 0;\n\

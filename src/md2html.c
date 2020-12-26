@@ -23,7 +23,8 @@ md2html (gchar *input, GError **err) {
     ctx.text = g_realloc (NULL, ctx.len);
     ctx.text[0] = '\0';
 
-    md_html (input, strlen(input), process_output, &ctx, 0, 0);
+    md_html (input, strlen(input), process_output, &ctx,
+        MD_FLAG_TABLES | MD_FLAG_UNDERLINE, 0);
 
     return ctx.text;
 }

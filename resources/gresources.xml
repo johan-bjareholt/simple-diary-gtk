@@ -5,5 +5,6 @@
         <file preprocess="xml-stripblanks">entry_listing.ui</file>
         <file preprocess="xml-stripblanks">entry_edit.ui</file>
         <file preprocess="xml-stripblanks">entry_view.ui</file>
+        <file preprocess="xml-stripblanks">image_picker.ui</file>
     </gresource>
 </gresources>

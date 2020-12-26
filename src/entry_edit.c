@@ -1,4 +1,5 @@
 #include "entry_edit.h"
+#include "image_picker.h"
 #include "utils.h"
 
 struct _EntryEdit
@@ -126,7 +127,25 @@ entry_edit_constructed (GObject *object)
 static gboolean
 add_image_button_clicked(GtkButton *button, gpointer user_data)
 {
-  g_print ("Add image\n");
+  EntryEdit *entry_edit = DIARY_ENTRY_EDIT (user_data);
+  gchar *image_path;
+  gchar *image_name;
+
+  if (image_picker_run (&image_name, &image_path)) {
+    gchar *md_image_link;
+    GtkTextBuffer *text_buffer;
+
+    g_print ("Adding image %s at '%s'\n", image_name, image_path);
+    text_buffer = gtk_text_view_get_buffer (entry_edit->text_view);
+    md_image_link = g_strdup_printf ("![%s](%s)", image_name, image_path);
+    gtk_text_buffer_insert_at_cursor (text_buffer, md_image_link,
+        strlen (md_image_link));
+
+    g_free (md_image_link);
+    g_free (image_name);
+    g_free (image_path);
+  }
+
   return TRUE;
 }
 

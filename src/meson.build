@@ -7,6 +7,7 @@ src = [
   'entry_list.c',
   'entry_listing.c',
   'main.c',
+  'image_picker.c',
   'notification.c',
   'utils.c',
   'md2html.c',
