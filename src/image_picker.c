@@ -116,6 +116,7 @@ image_picker_run (gchar *basename, gchar **image_name, gchar **image_path)
   return TRUE;
 
 error:
+  gtk_widget_destroy (GTK_WIDGET (image_picker));
   if (*image_name != NULL) {
     g_free (*image_name);
     *image_name = NULL;
