@@ -1,4 +1,4 @@
-src = [
+diary_src = [
   gresources,
 
   'entry.c',
@@ -14,9 +14,16 @@ src = [
   'window.c',
 ]
 
+diary_deps = [
+  gtk_dep,
+  md4c_dep,
+  md4c_html_dep,
+  webkitgtk_dep
+]
+
 executable(
-  'simple-diary', src,
-  dependencies: [gtk_dep, md4c_dep, md4c_html_dep, webkitgtk_dep],
+  'simple-diary', diary_src,
+  dependencies: diary_deps,
   install: true,
   gui_app: true,
 )

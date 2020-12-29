@@ -8,8 +8,13 @@ struct _ImagePicker
   /* widgets */
   GtkButton *add_button;
   GtkButton *cancel_button;
+
   GtkEntry *name_entry;
+
+  GtkRadioButton *file_radio_button;
   GtkFileChooserButton *file_button;
+
+  GtkRadioButton *clipboard_radio_button;
 };
 
 G_DEFINE_TYPE (ImagePicker, image_picker, GTK_TYPE_DIALOG);
@@ -22,10 +27,16 @@ image_picker_class_init (ImagePickerClass *klass)
 
   gtk_widget_class_set_template_from_resource (widget_class,
       "/com/johan-bjareholt/simple-diary/ui/image_picker.ui");
+
   gtk_widget_class_bind_template_child (widget_class, ImagePicker, add_button);
   gtk_widget_class_bind_template_child (widget_class, ImagePicker, cancel_button);
+
   gtk_widget_class_bind_template_child (widget_class, ImagePicker, name_entry);
+
+  gtk_widget_class_bind_template_child (widget_class, ImagePicker, file_radio_button);
   gtk_widget_class_bind_template_child (widget_class, ImagePicker, file_button);
+
+  gtk_widget_class_bind_template_child (widget_class, ImagePicker, clipboard_radio_button);
 }
 
 static void
@@ -59,15 +70,79 @@ copy_file (gchar *src_path, gchar *dest_path, GError **err)
   return ret;
 }
 
+static gboolean
+image_picker_save_from_file (ImagePicker *image_picker, gchar *target_dir,
+                             gchar **image_name, gchar **image_path)
+{
+  gchar *src_path;
+  gchar *image_extension;
+  GError *err = NULL;
+
+  src_path = gtk_file_chooser_get_filename (
+      GTK_FILE_CHOOSER (image_picker->file_button));
+  if (src_path == NULL) {
+    /* TODO: display warning to user */
+    g_print ("No file chosen, ignoring\n");
+    goto error;
+  }
+  image_extension = utils_get_file_extension (src_path);
+  *image_path = g_strdup_printf ("%s/%s%s", target_dir, *image_name,
+      image_extension);
+
+  if (!copy_file (src_path, *image_path, &err)) {
+    g_print ("Failed to copy image: %s\n", err->message);
+    goto error;
+  }
+
+  return TRUE;
+
+error:
+  if (*image_path != NULL) {
+    g_free (*image_path);
+    *image_path = NULL;
+  }
+
+  return FALSE;
+}
+
+static gboolean
+image_picker_save_from_clipboard (gchar *target_dir,
+                                 gchar **image_name, gchar **image_path)
+{
+  GtkClipboard *clipboard;
+  GdkPixbuf *pixbuf;
+  GError *err = NULL;
+  gboolean ret = FALSE;
+
+  *image_path = g_strdup_printf ("%s/%s.jpg", target_dir, *image_name);
+
+  clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+
+  pixbuf = gtk_clipboard_wait_for_image (clipboard);
+
+  if (pixbuf == NULL) {
+      goto out;
+  }
+  gdk_pixbuf_save (pixbuf, *image_path, "jpeg", &err, "quality", "100", NULL);
+
+  ret = TRUE;
+out:
+  if (err != NULL) {
+    g_printerr ("Failed to save image: %s\n", err->message);
+  }
+  return ret;
+}
+
+/* TODO: Fix so links are not absolute but relative */
+/* TODO: Make "file picker" inactive when clipboard is chosen */
 gboolean
 image_picker_run (gchar *basename, gchar **image_name, gchar **image_path)
 {
   gint result;
   ImagePicker *image_picker;
-  gchar *src_path;
-  gchar *target_dir;
-  gchar *image_extension;
-  GError *err = NULL;
+  gboolean active;
+  gchar *target_dir = NULL;
+  gboolean ret = FALSE;
 
   g_assert (image_name != NULL);
   g_assert (image_path != NULL);
@@ -85,46 +160,40 @@ image_picker_run (gchar *basename, gchar **image_name, gchar **image_path)
     case GTK_RESPONSE_CANCEL:
     case GTK_RESPONSE_NONE:
     case GTK_RESPONSE_DELETE_EVENT:
-      goto error;
+      goto out;
     default:
       g_print ("Invalid GTK_RESPONSE enum: %d\n", result);
       g_assert_not_reached ();
-      goto error;
+      goto out;
   }
 
-  src_path = gtk_file_chooser_get_filename (
-      GTK_FILE_CHOOSER (image_picker->file_button));
-  if (src_path == NULL) {
-    /* TODO: display warning to user */
-    g_print ("No file chosen, ignoring\n");
-    goto error;
-  }
   target_dir = utils_get_photos_folder (basename);
-  image_extension = utils_get_file_extension (src_path);
+
   *image_name = g_strdup (gtk_entry_get_text (image_picker->name_entry));
-  *image_path = g_strdup_printf ("%s/%s%s", target_dir, *image_name,
-      image_extension);
+
+  g_object_get (image_picker->file_radio_button, "active", &active, NULL);
+  if (active) {
+    g_print ("File active\n");
+    ret = image_picker_save_from_file (image_picker, target_dir, image_name,
+                                       image_path);
+  }
+  g_object_get (image_picker->clipboard_radio_button, "active", &active, NULL);
+  if (active) {
+    g_print ("Clipboard active\n");
+    ret = image_picker_save_from_clipboard (target_dir, image_name, image_path);
+  }
+
+  gtk_widget_destroy (GTK_WIDGET (image_picker));
+
+out:
   g_free (target_dir);
 
-  if (!copy_file (src_path, *image_path, &err)) {
-    g_print ("Failed to copy image: %s\n", err->message);
-    goto error;
+  if (ret == FALSE) {
+    if (*image_name != NULL) {
+      g_free (*image_name);
+      *image_name = NULL;
+    }
   }
 
-  gtk_widget_destroy (GTK_WIDGET (image_picker));
-
-  return TRUE;
-
-error:
-  gtk_widget_destroy (GTK_WIDGET (image_picker));
-  if (*image_name != NULL) {
-    g_free (*image_name);
-    *image_name = NULL;
-  }
-  if (*image_path != NULL) {
-    g_free (*image_path);
-    *image_path = NULL;
-  }
-
-  return FALSE;
+  return ret;
 }
