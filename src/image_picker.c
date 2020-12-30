@@ -71,11 +71,14 @@ copy_file (gchar *src_path, gchar *dest_path, GError **err)
 }
 
 static gboolean
-image_picker_save_from_file (ImagePicker *image_picker, gchar *target_dir,
-                             gchar **image_name, gchar **image_path)
+image_picker_save_from_file (ImagePicker *image_picker, gchar *basename,
+                             gchar **image_name, gchar **image_path_relative)
 {
   gchar *src_path;
   gchar *image_extension;
+  gchar *target_dir_absolute;
+  gchar *target_dir_relative;
+  gchar *image_path_absolute;
   GError *err = NULL;
 
   src_path = gtk_file_chooser_get_filename (
@@ -86,10 +89,20 @@ image_picker_save_from_file (ImagePicker *image_picker, gchar *target_dir,
     goto error;
   }
   image_extension = utils_get_file_extension (src_path);
-  *image_path = g_strdup_printf ("%s/%s%s", target_dir, *image_name,
-      image_extension);
 
-  if (!copy_file (src_path, *image_path, &err)) {
+  /* relative path */
+  target_dir_relative = utils_get_photos_folder (basename, FALSE);
+  *image_path_relative = g_strdup_printf ("%s/%s%s", target_dir_relative, *image_name,
+      image_extension);
+  g_free (target_dir_relative);
+
+  /* absolute path */
+  target_dir_absolute = utils_get_photos_folder (basename, TRUE);
+  image_path_absolute = g_strdup_printf ("%s/%s%s", target_dir_absolute, *image_name,
+      image_extension);
+  g_free (target_dir_absolute);
+
+  if (!copy_file (src_path, image_path_absolute, &err)) {
     g_print ("Failed to copy image: %s\n", err->message);
     goto error;
   }
@@ -97,24 +110,35 @@ image_picker_save_from_file (ImagePicker *image_picker, gchar *target_dir,
   return TRUE;
 
 error:
-  if (*image_path != NULL) {
-    g_free (*image_path);
-    *image_path = NULL;
+  if (*image_path_relative != NULL) {
+    g_free (*image_path_relative);
+    *image_path_relative = NULL;
   }
 
   return FALSE;
 }
 
 static gboolean
-image_picker_save_from_clipboard (gchar *target_dir,
-                                 gchar **image_name, gchar **image_path)
+image_picker_save_from_clipboard (gchar *basename,
+                                 gchar **image_name, gchar **image_path_relative)
 {
   GtkClipboard *clipboard;
   GdkPixbuf *pixbuf;
+  gchar *target_dir_absolute;
+  gchar *target_dir_relative;
+  gchar *image_path_absolute;
   GError *err = NULL;
   gboolean ret = FALSE;
 
-  *image_path = g_strdup_printf ("%s/%s.jpg", target_dir, *image_name);
+  /* relative path */
+  target_dir_relative = utils_get_photos_folder (basename, FALSE);
+  *image_path_relative = g_strdup_printf ("%s/%s.jpg", target_dir_relative, *image_name);
+  g_free (target_dir_relative);
+
+  /* absolute path */
+  target_dir_absolute = utils_get_photos_folder (basename, TRUE);
+  image_path_absolute = g_strdup_printf ("%s/%s.jpg", target_dir_absolute, *image_name);
+  g_free (target_dir_absolute);
 
   clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
 
@@ -123,10 +147,12 @@ image_picker_save_from_clipboard (gchar *target_dir,
   if (pixbuf == NULL) {
       goto out;
   }
-  gdk_pixbuf_save (pixbuf, *image_path, "jpeg", &err, "quality", "100", NULL);
+  gdk_pixbuf_save (pixbuf, image_path_absolute, "jpeg", &err, "quality", "100", NULL);
 
   ret = TRUE;
+
 out:
+  g_free (image_path_absolute);
   if (err != NULL) {
     g_printerr ("Failed to save image: %s\n", err->message);
   }
@@ -136,23 +162,22 @@ out:
 /* TODO: Fix so links are not absolute but relative */
 /* TODO: Make "file picker" inactive when clipboard is chosen */
 gboolean
-image_picker_run (gchar *basename, gchar **image_name, gchar **image_path)
+image_picker_run (gchar *basename, gchar **image_name, gchar **image_path_relative)
 {
   gint result;
   ImagePicker *image_picker;
   gboolean active;
-  gchar *target_dir = NULL;
   gboolean ret = FALSE;
 
   g_assert (image_name != NULL);
-  g_assert (image_path != NULL);
+  g_assert (image_path_relative != NULL);
 
   image_picker = g_object_new (DIARY_TYPE_IMAGE_PICKER, NULL);
 
   result = gtk_dialog_run (GTK_DIALOG (image_picker));
 
   *image_name = NULL;
-  *image_path = NULL;
+  *image_path_relative = NULL;
 
   switch (result) {
     case GTK_RESPONSE_OK:
@@ -167,27 +192,24 @@ image_picker_run (gchar *basename, gchar **image_name, gchar **image_path)
       goto out;
   }
 
-  target_dir = utils_get_photos_folder (basename);
-
   *image_name = g_strdup (gtk_entry_get_text (image_picker->name_entry));
 
   g_object_get (image_picker->file_radio_button, "active", &active, NULL);
   if (active) {
     g_print ("File active\n");
-    ret = image_picker_save_from_file (image_picker, target_dir, image_name,
-                                       image_path);
+    ret = image_picker_save_from_file (image_picker, basename, image_name,
+                                       image_path_relative);
   }
   g_object_get (image_picker->clipboard_radio_button, "active", &active, NULL);
   if (active) {
     g_print ("Clipboard active\n");
-    ret = image_picker_save_from_clipboard (target_dir, image_name, image_path);
+    ret = image_picker_save_from_clipboard (basename, image_name,
+                                            image_path_relative);
   }
 
   gtk_widget_destroy (GTK_WIDGET (image_picker));
 
 out:
-  g_free (target_dir);
-
   if (ret == FALSE) {
     if (*image_name != NULL) {
       g_free (*image_name);

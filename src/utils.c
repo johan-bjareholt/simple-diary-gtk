@@ -24,25 +24,33 @@ utils_get_diary_folder ()
 
 /*TODO: Move this to entry class? */
 gchar *
-utils_get_photos_folder (gchar *basename)
+utils_get_photos_folder (gchar *basename, gboolean absolute)
 {
   gchar *diary_folder;
-  gchar *photos_folder;
+  gchar *photos_folder_absolute;
 
   diary_folder = utils_get_diary_folder ();
-  photos_folder = g_strdup_printf ("%s/photos/%s", diary_folder, basename);
-
+  photos_folder_absolute = g_strdup_printf ("%s/photos/%s",
+                                            diary_folder, basename);
   g_free (diary_folder);
 
-  if (g_mkdir_with_parents (photos_folder, 0750) < 0) {
-    gchar *msg = g_strdup_printf ("Failed to create folder at '%s' because: %s\n", photos_folder, strerror(errno));
+  if (g_mkdir_with_parents (photos_folder_absolute, 0750) < 0) {
+    gchar *msg;
+
+    msg = g_strdup_printf ("Failed to create folder at '%s' because: %s\n",
+                           photos_folder_absolute, strerror(errno));
     utils_error_dialog(msg);
     g_free (msg);
-    g_free (photos_folder);
-    photos_folder = NULL;
+    g_free (photos_folder_absolute);
+    photos_folder_absolute = NULL;
   }
 
-  return photos_folder;
+  if (absolute) {
+    return photos_folder_absolute;
+  } else {
+    g_free (photos_folder_absolute);
+    return g_strdup_printf ("photos/%s", basename);
+  }
 }
 
 gchar *
