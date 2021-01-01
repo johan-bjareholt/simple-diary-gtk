@@ -26,12 +26,12 @@ typedef enum
 static GParamSpec *obj_properties[NUM_PROPS] = { NULL, };
 
 gchar *
-entry_get_basename (Entry *self)
+filename_to_basename (gchar *filename)
 {
   gchar *basename;
   gchar *last_dot;
 
-  basename = g_path_get_basename (self->filename);
+  basename = g_path_get_basename (filename);
   last_dot = strrchr (basename, '.');
   last_dot[0] = '\0';
 
@@ -44,39 +44,72 @@ entry_rename_file (Entry *self, gchar *new_name)
   gchar *old_file_path;
   gchar *new_file_path;
 
-  //gchar *old_photos_path;
-  //gchar *new_photos_path;
+  gchar *old_basename;
+  gchar *new_basename;
+
+  gchar *old_photos_path_full;
+  gchar *new_photos_path_full;
+
+  gchar *old_photos_path_short;
+  gchar *new_photos_path_short;
 
   /* TODO: Validate that it ends with .md */
+
+  /* get basenames */
+  old_basename = filename_to_basename (self->filename);
+  new_basename = filename_to_basename (new_name);
 
   /* move md file */
   old_file_path = g_strdup_printf ("%s/%s", self->folder, self->filename);
   new_file_path = g_strdup_printf ("%s/%s", self->folder, new_name);
   if (rename (old_file_path, new_file_path) < 0) {
     /* TODO: Exit gracefully, show popup */
-    g_printerr ("Failed to rename diary file: %s\n", strerror(errno));
+    g_printerr ("Failed to rename diary file '%s': %s\n", old_basename, strerror(errno));
     exit(EXIT_FAILURE);
   }
   g_free (old_file_path);
   g_free (new_file_path);
 
-  /* TODO: move photos folder */
-  /*
-  old_photos_path = g_strdup_printf ("%s/%s", self->folder, self->filename);
-  new_photos_path = g_strdup_printf ("%s/%s", self->folder, new_name);
-  if (rename (old_file_path, new_file_path) < 0) {
+  /* move photos folder */
+  old_photos_path_full = g_strdup_printf ("%s/photos/%s", self->folder, old_basename);
+  new_photos_path_full = g_strdup_printf ("%s/photos/%s", self->folder, new_basename);
+  if (rename (old_photos_path_full, new_photos_path_full) < 0) {
     // TODO: Exit gracefully, show popup
-    g_printerr ("Failed to rename diary file: %s\n", strerror(errno));
+    g_printerr ("Failed to rename photos folder for diary '%s': %s\n", old_basename, strerror(errno));
     exit(EXIT_FAILURE);
   }
-  g_free (old_file_path);
-  g_free (new_file_path);
-  */
+  g_free (old_photos_path_full);
+  g_free (new_photos_path_full);
 
   /* apply new name */
   if (self->filename != NULL)
     g_free (self->filename);
-  self->filename = new_name;
+  self->filename = g_strdup (new_name);
+
+  /* Change photo links to new folder */
+  old_photos_path_short = g_strdup_printf ("photos/%s", old_basename);
+  new_photos_path_short = g_strdup_printf ("photos/%s", new_basename);
+  GError *err = NULL;
+  gchar *text = entry_read (self, &err);
+  if (text == NULL) {
+    // TODO: Exit gracefully, show popup
+    g_printerr ("Failed to read diary entry '%s': %s\n", old_basename, err->message);
+    exit(EXIT_FAILURE);
+  }
+  char **split = g_strsplit(text, old_photos_path_short, -1);
+  g_free(text);
+  text = g_strjoinv(new_photos_path_short, split);
+  g_strfreev(split);
+  if (!entry_write (self, text, NULL)) {
+    // TODO: Exit gracefully, show popup
+    g_printerr ("Failed to write diary entry '%s': %s\n", old_basename, err->message);
+    exit(EXIT_FAILURE);
+  }
+  g_free (old_photos_path_short);
+  g_free (new_photos_path_short);
+
+  g_free (old_basename);
+  g_free (new_basename);
 
   return TRUE;
 }
@@ -123,7 +156,7 @@ entry_get_property (GObject    *object,
       g_value_set_string (value, self->filename);
       break;
     case PROP_BASENAME: {
-      gchar *basename = entry_get_basename (self);
+      gchar *basename = filename_to_basename (self->filename);
       g_value_set_string (value, basename);
       g_free (basename);
       break;
