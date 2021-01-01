@@ -1,4 +1,5 @@
 #include <gio/gio.h>
+#include <stdio.h>
 
 #include "entry.h"
 #include "utils.h"
@@ -23,6 +24,62 @@ typedef enum
 } EntryProperties;
 
 static GParamSpec *obj_properties[NUM_PROPS] = { NULL, };
+
+gchar *
+entry_get_basename (Entry *self)
+{
+  gchar *basename;
+  gchar *last_dot;
+
+  basename = g_path_get_basename (self->filename);
+  last_dot = strrchr (basename, '.');
+  last_dot[0] = '\0';
+
+  return basename;
+}
+
+gboolean
+entry_rename_file (Entry *self, gchar *new_name)
+{
+  gchar *old_file_path;
+  gchar *new_file_path;
+
+  //gchar *old_photos_path;
+  //gchar *new_photos_path;
+
+  /* TODO: Validate that it ends with .md */
+
+  /* move md file */
+  old_file_path = g_strdup_printf ("%s/%s", self->folder, self->filename);
+  new_file_path = g_strdup_printf ("%s/%s", self->folder, new_name);
+  if (rename (old_file_path, new_file_path) < 0) {
+    /* TODO: Exit gracefully, show popup */
+    g_printerr ("Failed to rename diary file: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  g_free (old_file_path);
+  g_free (new_file_path);
+
+  /* TODO: move photos folder */
+  /*
+  old_photos_path = g_strdup_printf ("%s/%s", self->folder, self->filename);
+  new_photos_path = g_strdup_printf ("%s/%s", self->folder, new_name);
+  if (rename (old_file_path, new_file_path) < 0) {
+    // TODO: Exit gracefully, show popup
+    g_printerr ("Failed to rename diary file: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  g_free (old_file_path);
+  g_free (new_file_path);
+  */
+
+  /* apply new name */
+  if (self->filename != NULL)
+    g_free (self->filename);
+  self->filename = new_name;
+
+  return TRUE;
+}
 
 static void
 entry_set_property (GObject      *object,
@@ -66,11 +123,7 @@ entry_get_property (GObject    *object,
       g_value_set_string (value, self->filename);
       break;
     case PROP_BASENAME: {
-      gchar *basename;
-      gchar *last_dot;
-      basename = g_path_get_basename (self->filename);
-      last_dot = strrchr (basename, '.');
-      last_dot[0] = '\0';
+      gchar *basename = entry_get_basename (self);
       g_value_set_string (value, basename);
       g_free (basename);
       break;

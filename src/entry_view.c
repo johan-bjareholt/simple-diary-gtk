@@ -11,7 +11,9 @@ struct _EntryView
   GtkBox parent_instance;
 
   GtkButton *edit_button;
+  GtkButton *rename_button;
   GtkButton *delete_button;
+
   GtkWidget *webview;
 
   Entry *entry;
@@ -27,6 +29,7 @@ entry_view_class_init (EntryViewClass *klass)
   gtk_widget_class_set_template_from_resource (widget_class,
       "/com/johan-bjareholt/simple-diary/ui/entry_view.ui");
   gtk_widget_class_bind_template_child (widget_class, EntryView, edit_button);
+  gtk_widget_class_bind_template_child (widget_class, EntryView, rename_button);
   gtk_widget_class_bind_template_child (widget_class, EntryView, delete_button);
 }
 
@@ -41,6 +44,39 @@ edit_button_clicked (GtkButton *button, gpointer user_data)
 
   entry_edit = entry_edit_new (self->entry);
   diary_window_push_view (diary_window, entry_edit);
+
+  return FALSE;
+}
+
+static gboolean
+rename_button_clicked (GtkButton *button, gpointer user_data)
+{
+  EntryView *self = (EntryView *) user_data;
+  GtkWidget *dialog =
+    gtk_message_dialog_new (NULL,
+                            0,
+                            GTK_MESSAGE_QUESTION,
+                            GTK_BUTTONS_OK_CANCEL,
+                            "Let's rename this!");
+  GtkWidget *dialog_box = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+  gchar *basename;
+  g_object_get (self->entry, "basename", &basename, NULL);
+  GtkWidget *text_input = gtk_entry_new ();
+  gtk_entry_set_text (GTK_ENTRY (text_input), basename);
+  gtk_container_add (GTK_CONTAINER (dialog_box), text_input);
+
+  gtk_widget_show_all (dialog);
+
+  gint ret = gtk_dialog_run (GTK_DIALOG (dialog));
+  if (ret == GTK_RESPONSE_OK) {
+    const gchar *text = gtk_entry_get_text (GTK_ENTRY (text_input));
+    /* TODO: check if name contains dots or slashes */
+    g_print ("%s\n", text);
+    gchar *new_name = g_strdup_printf ("%s.md", text);
+    entry_rename_file (self->entry, new_name);
+  }
+
+  gtk_widget_destroy (dialog);
 
   return FALSE;
 }
@@ -173,6 +209,7 @@ entry_view_init (EntryView *self)
   webkit_web_view_set_settings(WEBKIT_WEB_VIEW(self->webview),s);
 
   g_signal_connect (self->edit_button, "clicked", (GCallback) edit_button_clicked, self);
+  g_signal_connect (self->rename_button, "clicked", (GCallback) rename_button_clicked, self);
   g_signal_connect (self->delete_button, "clicked", (GCallback) delete_button_clicked, self);
 
   // This is necessary so it's reloaded if you edit an entry and go back

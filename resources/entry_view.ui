@@ -7,6 +7,11 @@
     <property name="can-focus">False</property>
     <property name="icon-name">gtk-edit</property>
   </object>
+  <object class="GtkImage" id="image_rename">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">font-x-generic</property>
+  </object>
   <object class="GtkImage" id="image_trash">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -42,6 +47,21 @@
           </packing>
         </child>
         <child>
+          <object class="GtkButton" id="rename_button">
+            <property name="label" translatable="yes"> Rename</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="image">image_rename</property>
+            <property name="always-show-image">True</property>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkButton" id="delete_button">
             <property name="label" translatable="yes"> Delete</property>
             <property name="visible">True</property>
@@ -54,7 +74,7 @@
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>
