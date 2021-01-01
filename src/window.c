@@ -1,5 +1,6 @@
 #include "window.h"
 #include "entry_edit.h"
+#include "entry_view.h"
 #include "entry_listing.h"
 #include "entry_list.h"
 #include "utils.h"
@@ -99,8 +100,9 @@ header_button_pressed (GtkWidget *widget, GdkEvent *event, gpointer user_data)
   /* decide view change depending on if button is "New" or "Back" */
   if (g_list_length (diary_window->view_stack) == 1) {
     Entry *entry = entry_new ();
-    /* TODO: Add this or reload entry list when popping back */
+    GtkWidget *entry_view = entry_view_new (entry);
     GtkWidget *entry_edit = entry_edit_new (entry);
+    diary_window_push_view (diary_window, entry_view);
     diary_window_push_view (diary_window, entry_edit);
   } else {
     diary_window_pop_view (diary_window);
