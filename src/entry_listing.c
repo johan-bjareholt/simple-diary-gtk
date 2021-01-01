@@ -58,7 +58,7 @@ entry_listing_new (Entry *entry)
   listing->entry = entry;
 
   gchar *title;
-  g_object_get (entry, "filename", &title, NULL);
+  g_object_get (entry, "basename", &title, NULL);
   gtk_label_set_label(listing->name_label, title);
 
   return GTK_WIDGET (listing);
