@@ -140,7 +140,7 @@ add_image_button_clicked(GtkButton *button, gpointer user_data)
 
     g_print ("Adding image %s at '%s'\n", image_name, image_path);
     text_buffer = gtk_text_view_get_buffer (entry_edit->text_view);
-    md_image_link = g_strdup_printf ("![%s](%s)", image_name, image_path);
+    md_image_link = g_strdup_printf ("![%s](<%s>)", image_name, image_path);
     gtk_text_buffer_insert_at_cursor (text_buffer, md_image_link,
         strlen (md_image_link));
 
