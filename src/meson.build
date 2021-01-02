@@ -11,6 +11,7 @@ diary_src = [
   'notification.c',
   'utils.c',
   'md2html.c',
+  'settings.c',
   'window.c',
 ]
 

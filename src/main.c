@@ -3,6 +3,7 @@
 
 #include "window.h"
 #include "utils.h"
+#include "settings.h"
 
 static void
 init(GtkApplication *app)
@@ -26,6 +27,7 @@ main(int argc, char *argv[])
 {
     GtkApplication *app;
 
+    settings_init ();
     app = gtk_application_new ("com.JohanBjareholt.SimpleDiary", G_APPLICATION_FLAGS_NONE);
     g_signal_connect (app, "activate", G_CALLBACK (init), app);
     int status = g_application_run (G_APPLICATION (app), argc, argv);

@@ -1,6 +1,7 @@
 #include <gtk/gtk.h>
 
 #include "utils.h"
+#include "settings.h"
 
 void
 utils_error_dialog(gchar *message)
@@ -18,8 +19,7 @@ utils_error_dialog(gchar *message)
 gchar *
 utils_get_diary_folder ()
 {
-  char *home = getenv("HOME");
-  return g_strdup_printf("%s/Documents/Diary", home);
+  return settings_get_diary_folder ();
 }
 
 /*TODO: Move this to entry class? */
