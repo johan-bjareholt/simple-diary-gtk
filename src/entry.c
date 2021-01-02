@@ -47,11 +47,11 @@ entry_rename_file (Entry *self, gchar *new_name)
   gchar *old_basename;
   gchar *new_basename;
 
-  gchar *old_photos_path_full;
-  gchar *new_photos_path_full;
+  gchar *old_photos_path_full = NULL;
+  gchar *new_photos_path_full = NULL;
 
-  gchar *old_photos_path_short;
-  gchar *new_photos_path_short;
+  gchar *old_photos_path_short = NULL;
+  gchar *new_photos_path_short = NULL;
 
   /* TODO: Validate that it ends with .md */
 
@@ -75,11 +75,12 @@ entry_rename_file (Entry *self, gchar *new_name)
   new_photos_path_full = g_strdup_printf ("%s/photos/%s", self->folder, new_basename);
   if (rename (old_photos_path_full, new_photos_path_full) < 0) {
     // TODO: Exit gracefully, show popup
+    if (errno == ENOENT) {
+        goto out;
+    }
     g_printerr ("Failed to rename photos folder for diary '%s': %s\n", old_basename, strerror(errno));
     exit(EXIT_FAILURE);
   }
-  g_free (old_photos_path_full);
-  g_free (new_photos_path_full);
 
   /* apply new name */
   if (self->filename != NULL)
@@ -105,8 +106,13 @@ entry_rename_file (Entry *self, gchar *new_name)
     g_printerr ("Failed to write diary entry '%s': %s\n", old_basename, err->message);
     exit(EXIT_FAILURE);
   }
+
+out:
   g_free (old_photos_path_short);
   g_free (new_photos_path_short);
+
+  g_free (old_photos_path_full);
+  g_free (new_photos_path_full);
 
   g_free (old_basename);
   g_free (new_basename);
