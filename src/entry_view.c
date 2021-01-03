@@ -54,10 +54,10 @@ rename_button_clicked (GtkButton *button, gpointer user_data)
   EntryView *self = (EntryView *) user_data;
   GtkWidget *dialog =
     gtk_message_dialog_new (NULL,
-                            0,
+                            GTK_DIALOG_DESTROY_WITH_PARENT,
                             GTK_MESSAGE_QUESTION,
                             GTK_BUTTONS_OK_CANCEL,
-                            "Let's rename this!");
+                            "What do you want to rename it to?");
   GtkWidget *dialog_box = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
   gchar *basename;
   g_object_get (self->entry, "basename", &basename, NULL);
@@ -81,60 +81,37 @@ rename_button_clicked (GtkButton *button, gpointer user_data)
   return FALSE;
 }
 
-static void
-delete (GtkDialog *dialog, int response, gpointer user_data)
+static gboolean
+delete_button_clicked (GtkButton *button, gpointer user_data)
 {
   DiaryWindow *diary_window;
   EntryView *self = (EntryView *) user_data;
+  GtkWidget *dialog;
+  gint response;
 
   diary_window = diary_window_get_instance ();
 
+  dialog =
+    gtk_message_dialog_new (NULL,
+                            GTK_DIALOG_DESTROY_WITH_PARENT,
+                            GTK_MESSAGE_QUESTION,
+                            GTK_BUTTONS_YES_NO,
+                            "Are you sure you want to deleve this entry?");
+
+  response = gtk_dialog_run (GTK_DIALOG (dialog));
   switch (response) {
     case GTK_RESPONSE_YES:
       entry_delete (self->entry, NULL);
       diary_window_pop_view (diary_window);
       break;
     case GTK_RESPONSE_NO:
+    case GTK_RESPONSE_DELETE_EVENT:
       break;
     default:
       g_assert_not_reached ();
       break;
   }
-}
 
-static gboolean
-delete_button_clicked (GtkButton *button, gpointer user_data)
-{
-  DiaryWindow *diary_window;
-  EntryView *self = (EntryView *) user_data;
-  GtkWidget *dialog, *label, *content_area;
-  GtkDialogFlags flags;
-
-  diary_window = diary_window_get_instance ();
-
-  flags = GTK_DIALOG_DESTROY_WITH_PARENT;
-  dialog = gtk_dialog_new_with_buttons (
-      "Confirm deletion of entry",
-      GTK_WINDOW (diary_window),
-      flags,
-      "Yes",
-      GTK_RESPONSE_YES,
-      "No",
-      GTK_RESPONSE_NO,
-      NULL);
-
-  content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-  label = gtk_label_new ("Are you sure you want to delete this entry?");
-
-  g_signal_connect (dialog,
-                    "response",
-                    G_CALLBACK (delete),
-                    self);
-
- gtk_container_add (GTK_CONTAINER (content_area), label);
- gtk_widget_show_all (dialog);
-
-  gtk_dialog_run (GTK_DIALOG (dialog));
   gtk_widget_destroy (dialog);
 
   return TRUE;

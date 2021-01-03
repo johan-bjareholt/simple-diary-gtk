@@ -207,9 +207,8 @@ image_picker_run (gchar *basename, gchar **image_name, gchar **image_path_relati
                                             image_path_relative);
   }
 
-  gtk_widget_destroy (GTK_WIDGET (image_picker));
-
 out:
+  gtk_widget_destroy (GTK_WIDGET (image_picker));
   if (ret == FALSE) {
     if (*image_name != NULL) {
       g_free (*image_name);
