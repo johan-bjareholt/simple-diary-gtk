@@ -11,7 +11,7 @@ settings_get_diary_folder (void)
 
   g_assert_nonnull (keyfile);
 
-  diary_folder = g_key_file_get_string (keyfile, "Notebook.Default", "Folder", &err);
+  diary_folder = g_key_file_get_string (keyfile, "Notebooks", "Default", &err);
   if (err != NULL) {
     g_printerr ("Settings file is corrypted: %s\n", err->message);
     exit (EXIT_FAILURE);
@@ -28,13 +28,13 @@ settings_load_default_config (void)
   char *home = getenv("HOME");
   GError *err = NULL;
 
-  // Notebook.Default.Folder
-  g_key_file_get_string (keyfile, "Notebook.Default", "Folder", &err);
+  // Notebooks.Default
+  g_key_file_get_string (keyfile, "Notebooks", "Default", &err);
   if (err != NULL) {
     if (g_error_matches (err, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_KEY_NOT_FOUND) ||
         g_error_matches (err, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_GROUP_NOT_FOUND)) {
       gchar * diary_folder = g_strdup_printf("%s/Documents/Diary", home);
-      g_key_file_set_string (keyfile, "Notebook.Default", "Folder", diary_folder);
+      g_key_file_set_string (keyfile, "Notebooks", "Default", diary_folder);
       write = TRUE;
       g_free (diary_folder);
     }
