@@ -40,11 +40,30 @@ image_picker_class_init (ImagePickerClass *klass)
 }
 
 static void
+response_ok_cb (GtkWidget *widget, gpointer user_data)
+{
+  GtkDialog *self = GTK_DIALOG (user_data);
+  gtk_dialog_response (self, GTK_RESPONSE_OK);
+}
+
+static void
+radio_button_pressed (GtkWidget *widget, gpointer user_data)
+{
+  ImagePicker *self = DIARY_IMAGE_PICKER (user_data);
+  gtk_widget_set_sensitive (GTK_WIDGET (self->file_button), GTK_WIDGET (self->file_radio_button) == widget);
+}
+
+static void
 image_picker_init (ImagePicker *self)
 {
   //GtkDialog *dialog = GTK_DIALOG (self);
 
   gtk_widget_init_template (GTK_WIDGET (self));
+
+  g_signal_connect (self->name_entry, "activate", (GCallback) response_ok_cb, self);
+
+  g_signal_connect (self->file_radio_button, "toggled", (GCallback) radio_button_pressed, self);
+  g_signal_connect (self->clipboard_radio_button, "toggled", (GCallback) radio_button_pressed, self);
 }
 
 static gboolean
