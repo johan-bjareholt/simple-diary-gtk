@@ -7,7 +7,7 @@
     <url type="homepage">https://github.com/johan-bjareholt/simple-diary-gtk</url>
 
     <description>
-        <p>@summary@. A few notable features are</p>
+        <p>@summary@. A few notable features are:</p>
         <ul>
             <li>Saved in standard markdown format</li>
             <li>Supports inserting images</li>
@@ -21,8 +21,23 @@
 
     <launchable type="desktop-id">@app_id@.desktop</launchable>
 
-    <!-- TODO: Add screenshots -->
+    <screenshots>
+        <screenshot type="default">
+            <caption>View of a single diary entry</caption>
+            <image>https://johan.bjareholt.com/img/projects/simple-diary/entry_view.png</image>
+        </screenshot>
+        <screenshot>
+            <caption>View of the list of diary entries</caption>
+            <image>https://johan.bjareholt.com/img/projects/simple-diary/entry_list.png</image>
+        </screenshot>
+        <screenshot>
+            <caption>View of the diary entry editor</caption>
+            <image>https://johan.bjareholt.com/img/projects/simple-diary/entry_edit.png</image>
+        </screenshot>
+    </screenshots>
 
+    <update_contact>johan _AT_ bjareho.lt</update_contact>
+    <project_license>GPL-3.0+</project_license>
     <metadata_license>MIT</metadata_license>
     <content_rating type="oars-1.1"/>
     <releases>
