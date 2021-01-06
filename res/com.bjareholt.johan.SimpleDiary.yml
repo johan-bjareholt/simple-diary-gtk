@@ -9,11 +9,13 @@ modules:
     sources:
       - type: git
         url: https://github.com/mity/md4c.git
+        tag: release-0.4.7
   - name: simple-diary
     buildsystem: meson
     sources:
-      - type: dir
-        path: ..
+      - type: git
+        url: https://github.com/johan-bjareholt/simple-diary-gtk.git
+        tag: v0.1.1
 finish-args:
   # Wayland access
   - --socket=wayland
