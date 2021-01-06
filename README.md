@@ -3,13 +3,10 @@ Simple Diary
 
 Simple and lightweight diary app.
 
-Many features are still missing as this is a work in progress.
-
 ### Features
 - Saves entries in markdown
 - Adding images to your entries
 - Works for small form factor devices
-- Flatpak support
 
 ### Dependencies
 - GTK+3
@@ -28,5 +25,5 @@ Executable will be built at build/src/simple-diary
 
 ##### Flatpak
 
-Build the org.johanbjare.SimpleDiary.yml manifest as with any other flatpak
+Build the com.bjareholt.johan.SimpleDiary.yaml manifest as with any other flatpak
 manifest with flatpak-builder
