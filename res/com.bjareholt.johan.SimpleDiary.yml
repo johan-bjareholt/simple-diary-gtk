@@ -1,4 +1,4 @@
-app-id: org.johanbjare.SimpleDiary
+app-id: com.bjareholt.johan.SimpleDiary
 runtime: org.gnome.Platform
 runtime-version: '3.38'
 sdk: org.gnome.Sdk
@@ -13,7 +13,7 @@ modules:
     buildsystem: meson
     sources:
       - type: dir
-        path: .
+        path: ..
 finish-args:
   # Wayland access
   - --socket=wayland
