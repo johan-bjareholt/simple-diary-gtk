@@ -11,7 +11,8 @@ struct _DiaryWindow
 
   /* widgets */
   GtkStack *content_box;
-  GtkButton *header_button;
+  GtkButton *new_button;
+  GtkButton *back_button;
 
   /* views */
   GList *view_stack;
@@ -34,7 +35,8 @@ diary_window_class_init (DiaryWindowClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   gtk_widget_class_set_template_from_resource (widget_class, "/com/johan-bjareholt/simple-diary/ui/window.ui");
   gtk_widget_class_bind_template_child (widget_class, DiaryWindow, content_box);
-  gtk_widget_class_bind_template_child (widget_class, DiaryWindow, header_button);
+  gtk_widget_class_bind_template_child (widget_class, DiaryWindow, new_button);
+  gtk_widget_class_bind_template_child (widget_class, DiaryWindow, back_button);
 }
 
 static gpointer
@@ -54,9 +56,11 @@ diary_window_update_button_text(DiaryWindow *self)
 {
   /* set label depending on button history */
   if (g_list_length (self->view_stack) == 1) {
-    g_object_set (self->header_button, "label", "New", NULL);
+    g_object_set (self->new_button, "visible", TRUE, NULL);
+    g_object_set (self->back_button, "visible", FALSE, NULL);
   } else {
-    g_object_set (self->header_button, "label", "Back", NULL);
+    g_object_set (self->new_button, "visible", FALSE, NULL);
+    g_object_set (self->back_button, "visible", TRUE, NULL);
   }
 }
 
@@ -93,20 +97,25 @@ diary_window_pop_view(DiaryWindow *self)
 }
 
 gboolean
-header_button_pressed (GtkWidget *widget, GdkEvent *event, gpointer user_data)
+back_button_pressed (GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   DiaryWindow *diary_window = DIARY_WINDOW (user_data);
 
-  /* decide view change depending on if button is "New" or "Back" */
-  if (g_list_length (diary_window->view_stack) == 1) {
-    Entry *entry = entry_new ();
-    GtkWidget *entry_view = entry_view_new (entry);
-    GtkWidget *entry_edit = entry_edit_new (entry);
-    diary_window_push_view (diary_window, entry_view);
-    diary_window_push_view (diary_window, entry_edit);
-  } else {
-    diary_window_pop_view (diary_window);
-  }
+  diary_window_pop_view (diary_window);
+
+  return FALSE;
+}
+
+gboolean
+new_button_pressed (GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  DiaryWindow *diary_window = DIARY_WINDOW (user_data);
+
+  Entry *entry = entry_new ();
+  GtkWidget *entry_view = entry_view_new (entry);
+  GtkWidget *entry_edit = entry_edit_new (entry);
+  diary_window_push_view (diary_window, entry_view);
+  diary_window_push_view (diary_window, entry_edit);
 
   return FALSE;
 }
@@ -121,9 +130,12 @@ diary_window_init (DiaryWindow *self)
   entry_list = entry_list_new (); //load_entry_list ();
   diary_window_push_view (self, entry_list);
 
-  g_signal_connect (self->header_button, "button-release-event", (GCallback) header_button_pressed, self);
+  g_signal_connect (self->new_button, "button-release-event", (GCallback) new_button_pressed, self);
+  g_signal_connect (self->back_button, "button-release-event", (GCallback) back_button_pressed, self);
 
   gtk_widget_show_all (GTK_WIDGET (self));
+
+  diary_window_update_button_text (self);
 }
 
 GtkApplicationWindow *

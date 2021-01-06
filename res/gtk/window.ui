@@ -2,6 +2,16 @@
 <!-- Generated with glade 3.38.1 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
+  <object class="GtkImage" id="image_back">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">go-previous-symbolic</property>
+  </object>
+  <object class="GtkImage" id="image_new">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">list-add-symbolic</property>
+  </object>
   <template class="DiaryWindow" parent="GtkApplicationWindow">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Template Window</property>
@@ -22,12 +32,24 @@
         <property name="can-focus">False</property>
         <property name="title" translatable="yes">Simple Diary</property>
         <child>
-          <object class="GtkButton" id="header_button">
-            <property name="label" translatable="yes">New</property>
+          <object class="GtkButton" id="new_button">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <property name="image">image_new</property>
+            <property name="always-show-image">True</property>
           </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="back_button">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="image">image_back</property>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
         </child>
       </object>
     </child>
