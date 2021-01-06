@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Simple Diary
+Comment=A diary with simple interface and entries saved in standard markdown
+GenericName=Simple Diary
+Exec=simple-diary
+# Translators: Do NOT translate or transliterate this text (this is an icon file name)!
+Icon=@icon@
+Type=Application
+StartupNotify=true
+X-GNOME-UsesNotifications=true
+Categories=GNOME;GTK;Office
+# Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+Keywords=Diary;Journal;GTK;Log;Personal;
+# Translators: Do NOT translate or transliterate this text (these are enum types)!
+X-Purism-FormFactor=Workstation;Mobile;

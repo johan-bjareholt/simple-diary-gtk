@@ -1,4 +1,4 @@
-project('simple-diary', 'c', meson_version: '>=0.43')
+project('simple-diary', 'c', meson_version: '>=0.49', warning_level: 2)
 
 gnome = import('gnome')
 
@@ -9,7 +9,9 @@ webkitgtk_dep = dependency('webkit2gtk-4.0')
 
 add_global_link_arguments(['-Wall'], language: 'c')
 
-subdir('resources')
+app_id = 'com.bjareholt.johan.SimpleDiary'
+
+subdir('res')
 subdir('src')
 
 if get_option('test').enabled()
