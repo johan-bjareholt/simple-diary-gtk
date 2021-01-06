@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2020 Johan Bjäreholt -->
+<component type="desktop-application">
+    <id>@app_id@</id>
+    <name>@name@</name>
+    <summary>@summary@</summary>
+    <url type="homepage">https://github.com/johan-bjareholt/simple-diary-gtk</url>
+
+    <description>
+        <p>@summary@. A few notable features are</p>
+        <ul>
+            <li>Saved in standard markdown format</li>
+            <li>Supports inserting images</li>
+            <li>Works on smaller screens</li>
+        </ul>
+    </description>
+
+    <categories>
+        <category>Office</category>
+    </categories>
+
+    <launchable type="desktop-id">@app_id@.desktop</launchable>
+
+    <!-- TODO: Add screenshots -->
+
+    <metadata_license>MIT</metadata_license>
+    <content_rating type="oars-1.0"/>
+    <releases>
+        <release version="v0.1.0" timestamp="2021-01-06"/>
+    </releases>
+</component>

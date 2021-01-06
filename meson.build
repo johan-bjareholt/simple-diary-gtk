@@ -10,6 +10,8 @@ webkitgtk_dep = dependency('webkit2gtk-4.0')
 add_global_link_arguments(['-Wall'], language: 'c')
 
 app_id = 'com.bjareholt.johan.SimpleDiary'
+summary = 'Simple and lightweight diary app'
+name = 'Simple Diary'
 
 subdir('res')
 subdir('src')

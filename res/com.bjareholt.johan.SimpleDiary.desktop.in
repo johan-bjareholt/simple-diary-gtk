@@ -1,10 +1,10 @@
 [Desktop Entry]
 Name=Simple Diary
-Comment=A diary with simple interface and entries saved in standard markdown
-GenericName=Simple Diary
+Comment=@summary@
+GenericName=@name@
 Exec=simple-diary
 # Translators: Do NOT translate or transliterate this text (this is an icon file name)!
-Icon=@icon@
+Icon=@app_id@
 Type=Application
 StartupNotify=true
 X-GNOME-UsesNotifications=true
