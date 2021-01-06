@@ -2,17 +2,18 @@ diary_src = [
   gresources,
 
   'entry.c',
-  'entry_view.c',
-  'entry_edit.c',
-  'entry_list.c',
-  'entry_listing.c',
   'main.c',
-  'image_picker.c',
   'notification.c',
   'utils.c',
   'md2html.c',
   'settings.c',
   'window.c',
+
+  'widgets/entry_view.c',
+  'widgets/entry_edit.c',
+  'widgets/entry_list.c',
+  'widgets/entry_listing.c',
+  'widgets/image_picker.c',
 ]
 
 diary_deps = [

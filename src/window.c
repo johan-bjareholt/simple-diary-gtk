@@ -1,9 +1,9 @@
-#include "window.h"
-#include "entry_edit.h"
-#include "entry_view.h"
-#include "entry_listing.h"
-#include "entry_list.h"
 #include "utils.h"
+#include "window.h"
+#include "widgets/entry_edit.h"
+#include "widgets/entry_view.h"
+#include "widgets/entry_listing.h"
+#include "widgets/entry_list.h"
 
 struct _DiaryWindow
 {
