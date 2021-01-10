@@ -41,6 +41,16 @@
     <metadata_license>MIT</metadata_license>
     <content_rating type="oars-1.1"/>
     <releases>
+        <release version="v0.1.5" timestamp="2021-01-10">
+            <description>
+                Fix bug not properly deleting photos when deleting diary
+            </description>
+        </release>
+        <release version="v0.1.4" timestamp="2021-01-10">
+            <description>
+                Improve interface for small formfactor devices
+            </description>
+        </release>
         <release version="v0.1.0" timestamp="2021-01-06"/>
     </releases>
 </component>

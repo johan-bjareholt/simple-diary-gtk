@@ -104,7 +104,7 @@ image_picker_save_from_file (ImagePicker *image_picker, gchar *basename,
       GTK_FILE_CHOOSER (image_picker->file_button));
   if (src_path == NULL) {
     /* TODO: display warning to user */
-    g_print ("No file chosen, ignoring\n");
+    utils_error_dialog ("No file chosen, ignoring\n");
     goto error;
   }
   image_extension = utils_get_file_extension (src_path);
@@ -122,7 +122,7 @@ image_picker_save_from_file (ImagePicker *image_picker, gchar *basename,
   g_free (target_dir_absolute);
 
   if (!copy_file (src_path, image_path_absolute, &err)) {
-    g_print ("Failed to copy image: %s\n", err->message);
+    utils_error_dialog ("Failed to copy image: %s\n", err->message);
     goto error;
   }
 
@@ -164,7 +164,7 @@ image_picker_save_from_clipboard (gchar *basename,
   pixbuf = gtk_clipboard_wait_for_image (clipboard);
 
   if (pixbuf == NULL) {
-      g_print ("Could not fetch image from clipboard\n");
+      utils_error_dialog ("Could not fetch image from clipboard\n");
       goto out;
   }
   gdk_pixbuf_save (pixbuf, image_path_absolute, "jpeg", &err, "quality", "100", NULL);
@@ -174,7 +174,7 @@ image_picker_save_from_clipboard (gchar *basename,
 out:
   g_free (image_path_absolute);
   if (err != NULL) {
-    g_printerr ("Failed to save image: %s\n", err->message);
+    utils_error_dialog ("Failed to save image: %s\n", err->message);
   }
   return ret;
 }
@@ -230,9 +230,9 @@ image_picker_run (gchar *basename, gchar **image_name, gchar **image_path_relati
     case GTK_RESPONSE_DELETE_EVENT:
       goto out;
     default:
-      g_print ("Invalid GTK_RESPONSE enum: %d\n", result);
+      g_printerr ("Invalid GTK_RESPONSE enum: %d\n", result);
       g_assert_not_reached ();
-      goto out;
+      exit (1);
   }
 
   *image_name = g_strdup (gtk_entry_get_text (image_picker->name_entry));
@@ -248,7 +248,7 @@ image_picker_run (gchar *basename, gchar **image_name, gchar **image_path_relati
       break;
     default:
       g_assert_not_reached ();
-      g_print ("Invalid radio button type\n");
+      g_printerr ("Invalid radio button type\n");
       exit (1);
   }
 

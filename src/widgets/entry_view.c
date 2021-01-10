@@ -101,7 +101,7 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
   response = gtk_dialog_run (GTK_DIALOG (dialog));
   switch (response) {
     case GTK_RESPONSE_YES:
-      entry_delete (self->entry, NULL);
+      entry_delete (self->entry);
       diary_window_pop_view (diary_window);
       break;
     case GTK_RESPONSE_NO:

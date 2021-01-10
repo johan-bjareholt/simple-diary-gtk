@@ -2,7 +2,7 @@
 
 #include <glib.h>
 
-void utils_error_dialog (gchar *message);
+void utils_error_dialog (gchar *message, ...);
 
 gchar *utils_get_diary_folder ();
 

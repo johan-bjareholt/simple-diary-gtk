@@ -1,5 +1,6 @@
 #include <gio/gio.h>
 #include <stdio.h>
+#include <glib/gstdio.h>
 
 #include "entry.h"
 #include "utils.h"
@@ -224,28 +225,56 @@ entry_write (Entry *self, gchar *text, GError **err)
 }
 
 gboolean
-entry_delete (Entry *self, GError **err)
+entry_delete (Entry *self)
 {
   gboolean ret = FALSE;
   GFile *file;
-  gchar *filepath;
+  GDir *dir;
+  gchar *filepath = NULL;
+  const gchar *filename = NULL;
+  gchar *basename = NULL;
+  gchar *photos_path = NULL;
+  GError *err = NULL;
 
   g_object_get (self, "filepath", &filepath, NULL);
   file = g_file_new_for_path (filepath);
 
-  g_print ("deleting %s\n", filepath);
-  if (!g_file_delete (file, NULL, err)) {
-    if (err != NULL) {
-      g_warning ("Failed to remove file '%s': %s", filepath, (*err)->message);
-    }
+  g_print ("deleting diary entry %s\n", filepath);
+  if (!g_file_delete (file, NULL, &err)) {
+    g_warning ("Failed to remove file '%s': %s", filepath, err->message);
+    g_object_unref (file);
+    g_clear_error (&err);
+    g_free (filepath);
     goto cleanup;
+  }
+  g_object_unref (file);
+
+  basename = filename_to_basename (self->filename);
+
+  photos_path = g_strdup_printf ("%s/photos/%s", self->folder, basename);
+  g_print ("deleting photos in '%s'\n", photos_path);
+  dir = g_dir_open(photos_path, 0, &err);
+  while ((filename = g_dir_read_name(dir))) {
+    filepath = g_strdup_printf ("%s/%s", photos_path, filename);
+    file = g_file_new_for_path (filepath);
+    if (!g_file_delete (file, NULL, &err)) {
+      g_warning ("Failed to remove file '%s': %s", filepath, err->message);
+      g_object_unref (file);
+      g_free (filepath);
+      g_clear_error (&err);
+      goto cleanup;
+    }
+    g_object_unref (file);
+    g_free (filepath);
+  }
+  if (g_remove (photos_path) < 0) {
+    g_printerr ("Failed to delete photos folder: %s\n", strerror (errno));
   }
 
   ret = TRUE;
 
 cleanup:
-  g_object_unref (file);
-  g_free (filepath);
+  g_free (photos_path);
 
   return ret;
 }

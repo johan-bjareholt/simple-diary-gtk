@@ -42,6 +42,7 @@ list_entries (const gchar * dir_path)
   }
 
   g_ptr_array_sort (files, (GCompareFunc) sort_ptrarray_alphabetically);
+  g_dir_close (dir);
 
   return files;
 }

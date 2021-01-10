@@ -1,12 +1,19 @@
 #include <gtk/gtk.h>
+#include <glib/gprintf.h>
 
 #include "utils.h"
 #include "settings.h"
 
 void
-utils_error_dialog(gchar *message)
+utils_error_dialog(gchar *format, ...)
 {
-  GtkWidget *dialog =
+  GtkWidget *dialog;
+  gchar *message;
+  va_list args;
+
+  va_start (args, format);
+  g_vasprintf (&message, format, args);
+  dialog =
     gtk_message_dialog_new (NULL,
                             0,
                             GTK_MESSAGE_ERROR,
