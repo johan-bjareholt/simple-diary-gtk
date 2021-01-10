@@ -164,6 +164,7 @@ image_picker_save_from_clipboard (gchar *basename,
   pixbuf = gtk_clipboard_wait_for_image (clipboard);
 
   if (pixbuf == NULL) {
+      g_print ("Could not fetch image from clipboard\n");
       goto out;
   }
   gdk_pixbuf_save (pixbuf, image_path_absolute, "jpeg", &err, "quality", "100", NULL);
@@ -178,6 +179,30 @@ out:
   return ret;
 }
 
+typedef enum _RadioButton {
+  RADIO_BUTTON_UNKNOWN,
+  RADIO_BUTTON_FILE,
+  RADIO_BUTTON_CLIPBOARD,
+} RadioButton;
+
+static RadioButton
+get_selected_radiobutton (ImagePicker *image_picker) {
+  gboolean active = FALSE;
+
+  g_object_get (image_picker->file_radio_button, "active", &active, NULL);
+  if (active) {
+    return RADIO_BUTTON_FILE;
+  }
+
+  g_object_get (image_picker->clipboard_radio_button, "active", &active, NULL);
+  if (active) {
+    return RADIO_BUTTON_CLIPBOARD;
+  }
+
+  g_assert_not_reached ();
+  return RADIO_BUTTON_UNKNOWN;
+}
+
 /* TODO: Fix so links are not absolute but relative */
 /* TODO: Make "file picker" inactive when clipboard is chosen */
 gboolean
@@ -185,7 +210,6 @@ image_picker_run (gchar *basename, gchar **image_name, gchar **image_path_relati
 {
   gint result;
   ImagePicker *image_picker;
-  gboolean active;
   gboolean ret = FALSE;
 
   g_assert (image_name != NULL);
@@ -213,17 +237,19 @@ image_picker_run (gchar *basename, gchar **image_name, gchar **image_path_relati
 
   *image_name = g_strdup (gtk_entry_get_text (image_picker->name_entry));
 
-  g_object_get (image_picker->file_radio_button, "active", &active, NULL);
-  if (active) {
-    g_print ("File active\n");
-    ret = image_picker_save_from_file (image_picker, basename, image_name,
-                                       image_path_relative);
-  }
-  g_object_get (image_picker->clipboard_radio_button, "active", &active, NULL);
-  if (active) {
-    g_print ("Clipboard active\n");
-    ret = image_picker_save_from_clipboard (basename, image_name,
-                                            image_path_relative);
+  switch (get_selected_radiobutton (image_picker)) {
+    case RADIO_BUTTON_FILE:
+      ret = image_picker_save_from_file (image_picker, basename, image_name,
+                                         image_path_relative);
+      break;
+    case RADIO_BUTTON_CLIPBOARD:
+      ret = image_picker_save_from_clipboard (basename, image_name,
+                                              image_path_relative);
+      break;
+    default:
+      g_assert_not_reached ();
+      g_print ("Invalid radio button type\n");
+      exit (1);
   }
 
 out:
