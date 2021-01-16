@@ -14,6 +14,7 @@ diary_src = [
   'widgets/entry_list.c',
   'widgets/entry_listing.c',
   'widgets/image_picker.c',
+  'widgets/settings_view.c',
 ]
 
 diary_deps = [

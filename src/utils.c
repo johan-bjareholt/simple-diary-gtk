@@ -65,3 +65,15 @@ utils_get_file_extension (gchar *filepath)
 {
   return strrchr (filepath, '.');
 }
+
+void
+utils_apply_dark_mode (void)
+{
+  GtkSettings *settings;
+  gboolean dark_mode_enabled;
+
+  settings = gtk_settings_get_default ();
+  dark_mode_enabled = settings_get_dark_mode ();
+
+  g_object_set (settings, "gtk-application-prefer-dark-theme", dark_mode_enabled, NULL);
+}

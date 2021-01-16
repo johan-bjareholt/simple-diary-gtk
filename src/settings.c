@@ -20,6 +20,38 @@ settings_get_diary_folder (void)
   return diary_folder;
 }
 
+gboolean
+settings_get_dark_mode (void)
+{
+  gboolean ret;
+  GError *err = NULL;
+
+  g_assert_nonnull (keyfile);
+
+  ret = g_key_file_get_boolean (keyfile, "Appearance", "DarkMode", &err);
+  if (err != NULL) {
+    g_printerr ("Settings file is corrupted: %s\n", err->message);
+    exit (EXIT_FAILURE);
+  }
+
+  return ret;
+}
+
+void
+settings_set_dark_mode (gboolean enabled)
+{
+  GError *err = NULL;
+
+  g_assert_nonnull (keyfile);
+
+  g_key_file_set_boolean (keyfile, "Appearance", "DarkMode", enabled);
+
+  if (!g_key_file_save_to_file (keyfile, keyfile_path, &err)) {
+    g_warning ("Error saving settings file: %s", err->message);
+    exit (EXIT_FAILURE);
+  }
+}
+
 /* If some required setting is missing, this function will return TRUE */
 static gboolean
 settings_load_default_config (void)
@@ -37,7 +69,25 @@ settings_load_default_config (void)
       g_key_file_set_string (keyfile, "Notebooks", "Default", diary_folder);
       write = TRUE;
       g_free (diary_folder);
+    } else {
+      g_printerr ("Settings file is corrupted: %s\n", err->message);
+      exit (EXIT_FAILURE);
     }
+    g_clear_error (&err);
+  }
+
+  /* Appearance.DarkMode */
+  g_key_file_get_boolean (keyfile, "Appearance", "DarkMode", &err);
+  if (err != NULL) {
+    if (g_error_matches (err, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_KEY_NOT_FOUND) ||
+        g_error_matches (err, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_GROUP_NOT_FOUND)) {
+      g_key_file_set_boolean (keyfile, "Appearance", "DarkMode", FALSE);
+      write = TRUE;
+    } else {
+      g_printerr ("Settings file is corrupted: %s\n", err->message);
+      exit (EXIT_FAILURE);
+    }
+    g_clear_error (&err);
   }
 
   return write;

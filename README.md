@@ -9,9 +9,10 @@ Simple and lightweight diary app.
 
 
 ### Features
-- Saves entries in markdown
+- Saves entries in standard markdown
 - Adding images to your entries
-- Scales well on desktops, laptops, tablets and phones
+- Scales on desktops, laptops, tablets and phones
+- Dark mode
 
 ### Dependencies
 - meson

@@ -9,9 +9,10 @@
     <description>
         <p>@summary@. A few notable features are:</p>
         <ul>
-            <li>Saved in standard markdown format</li>
-            <li>Supports inserting images</li>
-            <li>Works on smaller screens</li>
+            <li>Saves entries in standard markdown</li>
+            <li>Adding images to your entries</li>
+            <li>Scales on desktops, laptops, tablets and phones</li>
+            <li>Dark mode</li>
         </ul>
     </description>
 

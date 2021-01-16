@@ -4,6 +4,7 @@
 #include "widgets/entry_view.h"
 #include "widgets/entry_listing.h"
 #include "widgets/entry_list.h"
+#include "widgets/settings_view.h"
 
 struct _DiaryWindow
 {
@@ -13,6 +14,7 @@ struct _DiaryWindow
   GtkStack *content_box;
   GtkButton *new_button;
   GtkButton *back_button;
+  GtkButton *settings_button;
 
   /* views */
   GList *view_stack;
@@ -37,6 +39,7 @@ diary_window_class_init (DiaryWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, DiaryWindow, content_box);
   gtk_widget_class_bind_template_child (widget_class, DiaryWindow, new_button);
   gtk_widget_class_bind_template_child (widget_class, DiaryWindow, back_button);
+  gtk_widget_class_bind_template_child (widget_class, DiaryWindow, settings_button);
 }
 
 static gpointer
@@ -52,7 +55,7 @@ g_list_pop (GList **list)
 }
 
 static void
-diary_window_update_button_text(DiaryWindow *self)
+diary_window_update_header_buttons(DiaryWindow *self)
 {
   /* set label depending on button history */
   if (g_list_length (self->view_stack) == 1) {
@@ -61,6 +64,13 @@ diary_window_update_button_text(DiaryWindow *self)
   } else {
     g_object_set (self->new_button, "visible", FALSE, NULL);
     g_object_set (self->back_button, "visible", TRUE, NULL);
+  }
+
+  /* Don't show settings button if within settings page */
+  if (DIARY_TYPE_IS_SETTINGS_VIEW (g_list_last (self->view_stack)->data)) {
+    g_object_set (self->settings_button, "visible", FALSE, NULL);
+  } else {
+    g_object_set (self->settings_button, "visible", TRUE, NULL);
   }
 }
 
@@ -79,7 +89,7 @@ diary_window_push_view (DiaryWindow *self, GtkWidget *new_view)
   // TODO: replace container add with stack_set_visible_child
   gtk_container_add (GTK_CONTAINER (self->content_box), new_view);
 
-  diary_window_update_button_text (self);
+  diary_window_update_header_buttons (self);
 }
 
 void
@@ -93,11 +103,11 @@ diary_window_pop_view(DiaryWindow *self)
   GtkWidget *new_view = GTK_WIDGET (g_list_last (self->view_stack)->data);
   gtk_container_add (GTK_CONTAINER (self->content_box), new_view);
 
-  diary_window_update_button_text (self);
+  diary_window_update_header_buttons (self);
 }
 
 gboolean
-back_button_pressed (GtkWidget *widget, GdkEvent *event, gpointer user_data)
+back_button_pressed (GtkWidget *widget, gpointer user_data)
 {
   DiaryWindow *diary_window = DIARY_WINDOW (user_data);
 
@@ -107,7 +117,7 @@ back_button_pressed (GtkWidget *widget, GdkEvent *event, gpointer user_data)
 }
 
 gboolean
-new_button_pressed (GtkWidget *widget, GdkEvent *event, gpointer user_data)
+new_button_pressed (GtkWidget *widget, gpointer user_data)
 {
   DiaryWindow *diary_window = DIARY_WINDOW (user_data);
 
@@ -117,6 +127,15 @@ new_button_pressed (GtkWidget *widget, GdkEvent *event, gpointer user_data)
   diary_window_push_view (diary_window, entry_view);
   diary_window_push_view (diary_window, entry_edit);
 
+  return FALSE;
+}
+
+gboolean
+settings_button_pressed (GtkWidget *widget, gpointer user_data)
+{
+  DiaryWindow *diary_window = DIARY_WINDOW (user_data);
+  GtkWidget *settings_view = settings_view_new ();
+  diary_window_push_view (diary_window, settings_view);
   return FALSE;
 }
 
@@ -130,12 +149,13 @@ diary_window_init (DiaryWindow *self)
   entry_list = entry_list_new (); //load_entry_list ();
   diary_window_push_view (self, entry_list);
 
-  g_signal_connect (self->new_button, "button-release-event", (GCallback) new_button_pressed, self);
-  g_signal_connect (self->back_button, "button-release-event", (GCallback) back_button_pressed, self);
+  g_signal_connect (self->new_button, "clicked", (GCallback) new_button_pressed, self);
+  g_signal_connect (self->back_button, "clicked", (GCallback) back_button_pressed, self);
+  g_signal_connect (self->settings_button, "clicked", (GCallback) settings_button_pressed, self);
 
   gtk_widget_show_all (GTK_WIDGET (self));
 
-  diary_window_update_button_text (self);
+  diary_window_update_header_buttons (self);
 }
 
 GtkApplicationWindow *
