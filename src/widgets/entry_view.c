@@ -49,6 +49,13 @@ edit_button_clicked (GtkButton *button, gpointer user_data)
   return FALSE;
 }
 
+static void
+dialog_text_box_activate (GtkEntry *entry, gpointer user_data)
+{
+  GtkDialog *dialog = GTK_DIALOG (user_data);
+  gtk_dialog_response (dialog, GTK_RESPONSE_OK);
+}
+
 static gboolean
 rename_button_clicked (GtkButton *button, gpointer user_data)
 {
@@ -65,6 +72,7 @@ rename_button_clicked (GtkButton *button, gpointer user_data)
   GtkWidget *text_input = gtk_entry_new ();
   gtk_entry_set_text (GTK_ENTRY (text_input), basename);
   gtk_container_add (GTK_CONTAINER (dialog_box), text_input);
+  g_signal_connect (text_input, "activate", dialog_text_box_activate, dialog);
 
   gtk_widget_show_all (dialog);
 
