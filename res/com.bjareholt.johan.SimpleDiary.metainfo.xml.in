@@ -42,6 +42,11 @@
     <metadata_license>MIT</metadata_license>
     <content_rating type="oars-1.1"/>
     <releases>
+        <release version="v0.1.6" timestamp="2021-01-17">
+            <description>
+                Add SettingsView and DarkMode
+            </description>
+        </release>
         <release version="v0.1.5" timestamp="2021-01-10">
             <description>
                 Fix bug not properly deleting photos when deleting diary

@@ -5,6 +5,7 @@
 #include "entry.h"
 #include "entry_edit.h"
 #include "md2html.h"
+#include "settings.h"
 
 struct _EntryView
 {
@@ -134,6 +135,12 @@ body {\n\
   border: 0;\n\
   margin: 0;\n\
 }\n\
+\n\
+body.light {}\n\
+body.dark {\n\
+  color: #fff;\n\
+  background-color: #333;\n\
+}\n\
 ";
 
 static gchar *html_full_format = "\
@@ -143,7 +150,7 @@ static gchar *html_full_format = "\
 %s\n\
 </style>\n\
 </head>\n\
-<body>\n\
+<body class=\"%s\">\n\
 %s\n\
 </body>\n\
 </html>\n\
@@ -155,12 +162,16 @@ entry_view_load_html (EntryView *self)
   GError *err = NULL;
   gchar *text_md, *text_html, *text_html_full;
   gchar *folder;
+  gboolean dark_mode;
+  gchar *body_class;
 
   g_object_get (self->entry, "folder", &folder, NULL);
+  dark_mode = settings_get_dark_mode ();
+  body_class = dark_mode ? "dark" : "light";
 
   text_md = entry_read (self->entry, &err);
   text_html = md2html (text_md, &err);
-  text_html_full = g_strdup_printf (html_full_format, css_classes, text_html);
+  text_html_full = g_strdup_printf (html_full_format, css_classes, body_class, text_html);
   //g_print (text_html_full);
   gchar *folder_uri = g_strdup_printf ("file://%s/", folder);
   webkit_web_view_load_html (WEBKIT_WEB_VIEW (self->webview), text_html_full, folder_uri);
