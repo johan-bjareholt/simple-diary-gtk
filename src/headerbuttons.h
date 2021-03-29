@@ -9,8 +9,11 @@ struct _HeaderButtonsControlInterface
 {
   GTypeInterface parent_iface;
 
+  /* called when entering the view */
   void (*on_enter) (GtkWidget *widget, GtkButton *new_button, GtkButton *back_button, GtkButton *settings_button);
+  /* called when leaving the view (either back or forward to some new page) */
   void (*on_leave) (GtkWidget *widget, GtkButton *new_button, GtkButton *back_button, GtkButton *settings_button);
+  /* called when pressing back */
   void (*on_back_pressed) (GtkWidget *widget);
 };
 

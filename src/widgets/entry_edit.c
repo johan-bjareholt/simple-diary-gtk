@@ -2,6 +2,7 @@
 #include "image_picker.h"
 #include "utils.h"
 #include "window.h"
+#include "headerbuttons.h"
 
 struct _EntryEdit
 {
@@ -16,7 +17,24 @@ struct _EntryEdit
   gboolean unsaved_changes;
 };
 
-G_DEFINE_TYPE (EntryEdit, entry_edit, GTK_TYPE_BOX);
+static void entry_edit_save (EntryEdit *self);
+
+static void
+on_back_pressed (GtkWidget *widget)
+{
+  EntryEdit *self = DIARY_ENTRY_EDIT (widget);
+  entry_edit_save (self);
+  header_buttons_control_default_on_back_pressed (widget);
+}
+
+static void
+diary_header_buttons_control_init (HeaderButtonsControlInterface *iface)
+{
+    iface->on_back_pressed = on_back_pressed;
+}
+
+G_DEFINE_TYPE_WITH_CODE (EntryEdit, entry_edit, GTK_TYPE_BOX,
+    G_IMPLEMENT_INTERFACE (DIARY_TYPE_HEADER_BUTTONS, diary_header_buttons_control_init));
 
 typedef enum
 {
