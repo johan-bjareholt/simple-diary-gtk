@@ -17,6 +17,14 @@ G_DEFINE_TYPE (Entry, entry, G_TYPE_OBJECT);
 
 typedef enum
 {
+  SIGNAL_DELETED = 1,
+  SIGNAL_LAST,
+} EntrySignal;
+
+static guint obj_signals[SIGNAL_LAST] = { 0, };
+
+typedef enum
+{
   PROP_FOLDER = 1,
   PROP_FILENAME,
   PROP_BASENAME,
@@ -72,7 +80,6 @@ entry_rename_file (Entry *self, gchar *new_name)
   g_free (new_file_path);
 
   /* apply new name */
-  g_print ("eh\n");
   g_object_set (self, "filename", new_name, NULL);
 
   /* move photos folder */
@@ -273,6 +280,7 @@ entry_delete (Entry *self)
   ret = TRUE;
 
 cleanup:
+  g_signal_emit_by_name (self, "deleted");
   g_free (photos_path);
 
   return ret;
@@ -314,6 +322,18 @@ entry_class_init (EntryClass *klass)
   g_object_class_install_properties (object_class,
                                      NUM_PROPS,
                                      obj_properties);
+
+  obj_signals[SIGNAL_DELETED] =
+  g_signal_newv ("deleted",
+                 G_TYPE_FROM_CLASS (object_class),
+                 0, /* flags */
+                 NULL /* closure */,
+                 NULL /* accumulator */,
+                 NULL /* accumulator data */,
+                 g_cclosure_marshal_VOID__VOID,
+                 G_TYPE_NONE /* return_type */,
+                 0     /* n_params */,
+                 NULL  /* param_types */);
 }
 
 static void

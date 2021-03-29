@@ -132,16 +132,18 @@ back_button_pressed (GtkWidget *back_button, gpointer user_data)
 }
 
 gboolean
-new_button_pressed (GtkWidget *widget, gpointer user_data)
+new_button_pressed (GtkWidget *back_button, gpointer user_data)
 {
-  DiaryWindow *diary_window = DIARY_WINDOW (user_data);
+  DiaryWindow *self = DIARY_WINDOW (user_data);
+  GtkWidget *widget = GTK_WIDGET (g_list_last (self->view_stack)->data);
+  HeaderButtonsControlInterface *iface;
 
-  Entry *entry = entry_new ();
-  /* TODO: replace entry view with browser set focus */
-  GtkWidget *entry_view = entry_view_new (entry);
-  GtkWidget *entry_edit = entry_edit_new (entry);
-  diary_window_push_view (diary_window, entry_view);
-  diary_window_push_view (diary_window, entry_edit);
+  iface = g_type_interface_peek (G_OBJECT_GET_CLASS (widget), DIARY_TYPE_HEADER_BUTTONS);
+  if (iface) {
+    iface->on_new_pressed (widget);
+  } else {
+    header_buttons_control_default_on_new_pressed (widget);
+  }
 
   return FALSE;
 }

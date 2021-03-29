@@ -3,16 +3,17 @@
 #include "headerbuttons.h"
 #include "entry_browser.h"
 #include "entry_list.h"
+#include "entry_edit.h"
 #include "entry_view.h"
 #include "entry.h"
-
-#include "entry.h"
+#include "window.h"
 
 struct _EntryBrowser
 {
   GtkBox parent_instance;
 
   HdyLeaflet *leaflet;
+  EntryList *entry_list;
   GtkBox *entry_list_box;
   GtkBox *content_box;
   GtkWidget *content_box_child;
@@ -67,6 +68,23 @@ on_leave (GtkWidget *widget, GtkButton *new_button, GtkButton *back_button, GtkB
 }
 
 static void
+on_new_pressed (GtkWidget *widget)
+{
+  EntryBrowser *self = DIARY_ENTRY_BROWSER (widget);
+  DiaryWindow *diary_window = diary_window_get_instance ();
+  GtkWidget *entry_view;
+  GtkWidget *entry_edit;
+
+  Entry *entry = entry_new ();
+  entry_view = entry_view_new (entry);
+  entry_list_add_entry (self->entry_list, entry);
+  entry_edit = entry_edit_new (entry);
+
+  entry_browser_set_content (self, GTK_WIDGET (entry_view));
+  diary_window_push_view (diary_window, entry_edit);
+}
+
+static void
 on_back_pressed (GtkWidget *widget)
 {
   EntryBrowser *self = DIARY_ENTRY_BROWSER (widget);
@@ -78,6 +96,7 @@ diary_header_buttons_control_init (HeaderButtonsControlInterface *iface)
 {
     iface->on_enter = on_enter;
     iface->on_leave = on_leave;
+    iface->on_new_pressed = on_new_pressed;
     iface->on_back_pressed = on_back_pressed;
 }
 
@@ -142,16 +161,14 @@ entry_browser_class_init (EntryBrowserClass *klass)
 static void
 entry_browser_init (EntryBrowser *self)
 {
-  GtkWidget *entry_list;
-
   self->content_box_child = NULL;
 
   gtk_widget_init_template (GTK_WIDGET (self));
 
-  entry_list = entry_list_new ();
-  gtk_container_add (GTK_CONTAINER (self->entry_list_box), entry_list);
+  self->entry_list = DIARY_ENTRY_LIST (entry_list_new ());
+  gtk_container_add (GTK_CONTAINER (self->entry_list_box), GTK_WIDGET (self->entry_list));
 
-  g_signal_connect (entry_list, "selection-changed", G_CALLBACK (entry_selected_changed_cb), self);
+  g_signal_connect (self->entry_list, "selection-changed", G_CALLBACK (entry_selected_changed_cb), self);
 
   hdy_leaflet_set_visible_child (self->leaflet, GTK_WIDGET (self->entry_list_box));
 

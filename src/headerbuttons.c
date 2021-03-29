@@ -17,6 +17,11 @@ header_buttons_control_default_on_leave (GtkWidget *widget, GtkButton *new_butto
 }
 
 void
+header_buttons_control_default_on_new_pressed (GtkWidget *widget)
+{
+}
+
+void
 header_buttons_control_default_on_back_pressed (GtkWidget *widget)
 {
   DiaryWindow *diary_window = diary_window_get_instance ();
@@ -29,5 +34,6 @@ diary_header_buttons_control_default_init (HeaderButtonsControlInterface *iface)
 {
   iface->on_enter = header_buttons_control_default_on_enter;
   iface->on_leave = header_buttons_control_default_on_leave;
+  iface->on_new_pressed = header_buttons_control_default_on_new_pressed;
   iface->on_back_pressed = header_buttons_control_default_on_back_pressed;
 }

@@ -116,7 +116,7 @@ generate_entry_list (EntryList *self, const gchar *dir_path, GPtrArray *files)
 }
 
 static void
-load_entry_list (EntryList *self, gpointer user_data)
+load_entry_list (EntryList *self)
 {
   gchar *dir_path;
   GPtrArray *files;
@@ -149,14 +149,27 @@ entry_list_class_init (EntryListClass *klass)
       0, 0, NULL, NULL, NULL, G_TYPE_NONE, 1, DIARY_TYPE_ENTRY);
 }
 
+void
+entry_list_add_entry (EntryList *self, Entry *entry)
+{
+  g_print ("Adding listing\n");
+
+  GtkWidget *entry_listing = GTK_WIDGET (entry_listing_new (entry));
+  GtkWidget *row_widget = gtk_list_box_row_new ();
+  gtk_container_add (GTK_CONTAINER (row_widget), entry_listing);
+  gtk_list_box_insert (self->entry_list_box, row_widget, -1);
+  gtk_widget_show_all (GTK_WIDGET (self));
+}
+
 static void
 entry_list_init (EntryList *self)
 {
   self->entry_list_box = NULL;
   // We load and unload on ever map/unmap so the entry list is updated in case
   // a entry has been deleted or added
-  g_assert (g_signal_connect (self, "map", (GCallback) load_entry_list, NULL) > 0);
-  g_assert (g_signal_connect (self, "unmap", (GCallback) unload_entry_list, NULL) > 0);
+  load_entry_list (self);
+  g_assert (g_signal_connect (self, "destroy", (GCallback) unload_entry_list, NULL) > 0);
+
 
   gtk_widget_set_vexpand (GTK_WIDGET (self), TRUE);
   gtk_widget_set_hexpand (GTK_WIDGET (self), TRUE);
