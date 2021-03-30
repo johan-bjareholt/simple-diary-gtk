@@ -82,18 +82,13 @@ entry_selected_changed_cb (GtkListBox *entry_list_box, gpointer user_data)
 
   GtkListBoxRow *row = gtk_list_box_get_selected_row (entry_list_box);
   if (row) {
-    GList *children;
+    gchar *name;
+    GtkWidget *child;
     EntryListing *listing;
 
-    children = gtk_container_get_children (GTK_CONTAINER (row));
-    g_assert (children != NULL);
-    listing = children->data;
+    child = gtk_bin_get_child (GTK_BIN (row));
+    listing = DIARY_ENTRY_LISTING (child);
     entry = entry_listing_get_entry (listing);
-    g_list_free (children);
-  }
-
-  if (entry) {
-    gchar *name;
     g_object_get (entry, "basename", &name, NULL);
     g_print ("%s\n", name);
   } else {
@@ -103,28 +98,35 @@ entry_selected_changed_cb (GtkListBox *entry_list_box, gpointer user_data)
   g_signal_emit_by_name (list, "selection-changed", entry);
 }
 
+void
+entry_list_add_entry (EntryList *self, Entry *entry)
+{
+  GtkWidget *entry_listing = GTK_WIDGET (entry_listing_new (entry));
+  GtkWidget *row_widget = gtk_list_box_row_new ();
+  g_signal_connect_swapped (entry_listing, "destroy", G_CALLBACK (gtk_widget_destroy), row_widget);
+  gtk_container_add (GTK_CONTAINER (row_widget), entry_listing);
+  gtk_list_box_insert (self->entry_list_box, row_widget, -1);
+  gtk_widget_show_all (GTK_WIDGET (self));
+}
+
 static GtkListBox *
 generate_entry_list (EntryList *self, const gchar *dir_path, GPtrArray *files)
 {
   const gchar *filename;
-  GtkListBox *entry_list_box;
 
-  entry_list_box = GTK_LIST_BOX (gtk_list_box_new ());
-  gtk_list_box_set_selection_mode (entry_list_box, GTK_SELECTION_NONE);
+  self->entry_list_box = GTK_LIST_BOX (gtk_list_box_new ());
+  gtk_list_box_set_selection_mode (self->entry_list_box, GTK_SELECTION_NONE);
 
-  g_signal_connect (entry_list_box, "row-activated", G_CALLBACK (entry_pressed_cb), NULL);
-  g_signal_connect (entry_list_box, "selected-rows-changed", G_CALLBACK (entry_selected_changed_cb), self);
+  g_signal_connect (self->entry_list_box, "row-activated", G_CALLBACK (entry_pressed_cb), NULL);
+  g_signal_connect (self->entry_list_box, "selected-rows-changed", G_CALLBACK (entry_selected_changed_cb), self);
 
   for (int i=0; i < files->len; i++) {
     filename = g_ptr_array_index (files, i);
     Entry *entry = entry_open (dir_path, filename);
-    GtkWidget *entry_listing = GTK_WIDGET (entry_listing_new (entry));
-    GtkWidget *row_widget = gtk_list_box_row_new ();
-    gtk_container_add (GTK_CONTAINER (row_widget), entry_listing);
-    gtk_list_box_insert (entry_list_box, row_widget, -1);
+    entry_list_add_entry (self, entry);
   }
 
-  return entry_list_box;
+  return self->entry_list_box;
 }
 
 static void
@@ -159,18 +161,6 @@ entry_list_class_init (EntryListClass *klass)
   entry_list_signals [SIGNAL_SELECTION_CHANGED] =
       g_signal_new ("selection-changed", G_TYPE_FROM_CLASS (klass),
       0, 0, NULL, NULL, NULL, G_TYPE_NONE, 1, DIARY_TYPE_ENTRY);
-}
-
-void
-entry_list_add_entry (EntryList *self, Entry *entry)
-{
-  g_print ("Adding listing\n");
-
-  GtkWidget *entry_listing = GTK_WIDGET (entry_listing_new (entry));
-  GtkWidget *row_widget = gtk_list_box_row_new ();
-  gtk_container_add (GTK_CONTAINER (row_widget), entry_listing);
-  gtk_list_box_insert (self->entry_list_box, row_widget, -1);
-  gtk_widget_show_all (GTK_WIDGET (self));
 }
 
 static void
