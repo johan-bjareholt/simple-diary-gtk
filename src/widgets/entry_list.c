@@ -21,12 +21,25 @@ static guint entry_list_signals[LAST_SIGNAL] = { 0 };
 G_DEFINE_TYPE (EntryList, entry_list, GTK_TYPE_SCROLLED_WINDOW);
 
 static gint
-sort_ptrarray_alphabetically(gconstpointer a, gconstpointer b)
+list_box_sort (GtkListBoxRow *row1, GtkListBoxRow *row2, gpointer user_data)
 {
-    gchar *a_str = *(gchar **) a;
-    gchar *b_str = *(gchar **) b;
+  EntryListing *listing1;
+  EntryListing *listing2;
+  Entry *entry1;
+  Entry *entry2;
+  gchar *name1;
+  gchar *name2;
 
-    return -g_strcmp0 (a_str, b_str);
+  listing1 = DIARY_ENTRY_LISTING (gtk_bin_get_child (GTK_BIN (row1)));
+  listing2 = DIARY_ENTRY_LISTING (gtk_bin_get_child (GTK_BIN (row2)));
+
+  entry1 = entry_listing_get_entry (listing1);
+  entry2 = entry_listing_get_entry (listing2);
+
+  g_object_get (entry1, "filename", &name1, NULL);
+  g_object_get (entry2, "filename", &name2, NULL);
+
+  return -g_strcmp0 (name1, name2);
 }
 
 static GPtrArray *
@@ -48,7 +61,6 @@ list_entries (const gchar * dir_path)
     g_free (file_path);
   }
 
-  g_ptr_array_sort (files, (GCompareFunc) sort_ptrarray_alphabetically);
   g_dir_close (dir);
 
   return files;
@@ -170,6 +182,7 @@ entry_list_init (EntryList *self)
   load_entry_list (self);
   g_assert (g_signal_connect (self, "destroy", (GCallback) unload_entry_list, NULL) > 0);
 
+  gtk_list_box_set_sort_func (self->entry_list_box, list_box_sort, NULL, NULL);
 
   gtk_widget_set_vexpand (GTK_WIDGET (self), TRUE);
   gtk_widget_set_hexpand (GTK_WIDGET (self), TRUE);
