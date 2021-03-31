@@ -1,6 +1,7 @@
 #include <gio/gio.h>
 #include <stdio.h>
 #include <glib/gstdio.h>
+#include <errno.h>
 
 #include "entry.h"
 #include "utils.h"
