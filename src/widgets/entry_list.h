@@ -12,4 +12,5 @@ G_DECLARE_FINAL_TYPE (EntryList, entry_list, DIARY, ENTRY_LIST, GtkScrolledWindo
 GtkWidget * entry_list_new (void);
 
 void entry_list_add_entry (EntryList *self, Entry *entry, gboolean focus);
+void entry_list_unfocus (EntryList *self);
 EntryListing * entry_list_find (EntryList *self, gchar *filename);

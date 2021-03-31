@@ -201,6 +201,12 @@ entry_list_find (EntryList *self, gchar *filename)
   return ctx.match;
 }
 
+void
+entry_list_unfocus (EntryList *self)
+{
+  gtk_list_box_select_row (self->entry_list_box, NULL);
+}
+
 static void
 entry_list_init (EntryList *self)
 {

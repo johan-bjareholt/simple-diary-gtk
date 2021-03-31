@@ -101,6 +101,7 @@ on_back_pressed (GtkWidget *widget)
 {
   EntryBrowser *self = DIARY_ENTRY_BROWSER (widget);
   entry_browser_set_content (self, NULL);
+  entry_list_unfocus (self->entry_list);
 }
 
 static void
