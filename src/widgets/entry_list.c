@@ -99,13 +99,16 @@ entry_selected_changed_cb (GtkListBox *entry_list_box, gpointer user_data)
 }
 
 void
-entry_list_add_entry (EntryList *self, Entry *entry)
+entry_list_add_entry (EntryList *self, Entry *entry, gboolean focus)
 {
   GtkWidget *entry_listing = GTK_WIDGET (entry_listing_new (entry));
   GtkWidget *row_widget = gtk_list_box_row_new ();
   g_signal_connect_swapped (entry_listing, "destroy", G_CALLBACK (gtk_widget_destroy), row_widget);
   gtk_container_add (GTK_CONTAINER (row_widget), entry_listing);
   gtk_list_box_insert (self->entry_list_box, row_widget, -1);
+  if (focus) {
+    gtk_list_box_select_row (self->entry_list_box, GTK_LIST_BOX_ROW (row_widget));
+  }
   gtk_widget_show_all (GTK_WIDGET (self));
 }
 
@@ -123,7 +126,7 @@ generate_entry_list (EntryList *self, const gchar *dir_path, GPtrArray *files)
   for (int i=0; i < files->len; i++) {
     filename = g_ptr_array_index (files, i);
     Entry *entry = entry_open (dir_path, filename);
-    entry_list_add_entry (self, entry);
+    entry_list_add_entry (self, entry, FALSE);
   }
 
   return self->entry_list_box;
@@ -161,6 +164,41 @@ entry_list_class_init (EntryListClass *klass)
   entry_list_signals [SIGNAL_SELECTION_CHANGED] =
       g_signal_new ("selection-changed", G_TYPE_FROM_CLASS (klass),
       0, 0, NULL, NULL, NULL, G_TYPE_NONE, 1, DIARY_TYPE_ENTRY);
+}
+
+typedef struct {
+  EntryListing *match;
+  gchar *filename;
+} EntryFindCtx;
+
+static void
+is_entry (GtkBin *row, EntryFindCtx *ctx)
+{
+  Entry *entry;
+  gchar *filename;
+  EntryListing *listing;
+  if (ctx->match)
+    return;
+
+  listing = DIARY_ENTRY_LISTING (gtk_bin_get_child (row));
+
+  entry = entry_listing_get_entry (listing);
+  g_object_get (entry, "filename", &filename, NULL);
+  if (g_strcmp0 (filename, ctx->filename) == 0) {
+    ctx->match = listing;
+  }
+}
+
+EntryListing *
+entry_list_find (EntryList *self, gchar *filename)
+{
+  EntryFindCtx ctx;
+  ctx.match = NULL;
+  ctx.filename = filename;
+
+  gtk_container_foreach (GTK_CONTAINER (self->entry_list_box), (GtkCallback) is_entry, &ctx);
+
+  return ctx.match;
 }
 
 static void

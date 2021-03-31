@@ -112,8 +112,8 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
   response = gtk_dialog_run (GTK_DIALOG (dialog));
   switch (response) {
     case GTK_RESPONSE_YES:
+      gtk_widget_destroy (GTK_WIDGET (self));
       entry_delete (self->entry);
-      gtk_widget_destroy (self);
       break;
     case GTK_RESPONSE_NO:
     case GTK_RESPONSE_DELETE_EVENT:

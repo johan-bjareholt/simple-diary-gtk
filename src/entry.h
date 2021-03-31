@@ -8,7 +8,7 @@ G_DECLARE_FINAL_TYPE (Entry, entry, DIARY, ENTRY, GObject)
 
 typedef struct _Entry Entry;
 
-Entry * entry_new (void);
+Entry * entry_new (const gchar *folder);
 Entry * entry_open (const gchar *folder, const gchar *filename);
 gchar * entry_read (Entry *self, GError **err);
 gboolean entry_rename_file (Entry *self, gchar *new_name);

@@ -3,6 +3,7 @@
 #include "headerbuttons.h"
 #include "entry_browser.h"
 #include "entry_list.h"
+#include "entry_listing.h"
 #include "entry_edit.h"
 #include "entry_view.h"
 #include "entry.h"
@@ -72,14 +73,25 @@ on_new_pressed (GtkWidget *widget)
 {
   EntryBrowser *self = DIARY_ENTRY_BROWSER (widget);
   DiaryWindow *diary_window = diary_window_get_instance ();
+  EntryListing *entry_listing;
   GtkWidget *entry_view;
   GtkWidget *entry_edit;
+  Entry *entry;
 
-  Entry *entry = entry_new ();
-  entry_view = entry_view_new (entry);
-  entry_list_add_entry (self->entry_list, entry);
+  GDateTime *now = g_date_time_new_now_local ();
+  gchar *filename = g_date_time_format (now, "%Y-%m-%d - %A.md");
+
+  entry_listing = entry_list_find (self->entry_list, filename);
+  if (entry_listing != NULL) {
+    g_free (filename);
+    entry = entry_listing_get_entry (entry_listing);
+  } else {
+    entry = entry_new (filename);
+    entry_list_add_entry (self->entry_list, entry, TRUE);
+  }
+
   entry_edit = entry_edit_new (entry);
-
+  entry_view = entry_view_new (entry);
   entry_browser_set_content (self, GTK_WIDGET (entry_view));
   diary_window_push_view (diary_window, entry_edit);
 }

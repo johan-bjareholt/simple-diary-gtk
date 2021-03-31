@@ -354,11 +354,9 @@ entry_open (const gchar *folder, const gchar *filename)
 }
 
 Entry *
-entry_new (void)
+entry_new (const gchar *filename)
 {
     gchar *folder = utils_get_diary_folder ();
-    GDateTime *now = g_date_time_new_now_local ();
-    gchar *filename = g_date_time_format (now, "%Y-%m-%d - %A.md");
     Entry *entry = DIARY_ENTRY (entry_open (folder, filename));
     g_free (folder);
     return entry;
