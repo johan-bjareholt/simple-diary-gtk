@@ -42,6 +42,12 @@
     <metadata_license>MIT</metadata_license>
     <content_rating type="oars-1.1"/>
     <releases>
+        <release version="v0.2.0" timestamp="2021-04-01">
+            <description>
+                Improved UI for desktop.
+                Lots of bug fixes.
+            </description>
+        </release>
         <release version="v0.1.7" timestamp="2021-01-24">
             <description>
                 New icon and improved dark mode
