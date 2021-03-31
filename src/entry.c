@@ -1,6 +1,7 @@
 #include <gio/gio.h>
 #include <stdio.h>
 #include <glib/gstdio.h>
+#include <errno.h>
 
 #include "entry.h"
 #include "utils.h"
@@ -14,6 +15,14 @@ struct _Entry
 };
 
 G_DEFINE_TYPE (Entry, entry, G_TYPE_OBJECT);
+
+typedef enum
+{
+  SIGNAL_DELETED = 1,
+  SIGNAL_LAST,
+} EntrySignal;
+
+static guint obj_signals[SIGNAL_LAST] = { 0, };
 
 typedef enum
 {
@@ -71,6 +80,9 @@ entry_rename_file (Entry *self, gchar *new_name)
   g_free (old_file_path);
   g_free (new_file_path);
 
+  /* apply new name */
+  g_object_set (self, "filename", new_name, NULL);
+
   /* move photos folder */
   old_photos_path_full = g_strdup_printf ("%s/photos/%s", self->folder, old_basename);
   new_photos_path_full = g_strdup_printf ("%s/photos/%s", self->folder, new_basename);
@@ -82,11 +94,6 @@ entry_rename_file (Entry *self, gchar *new_name)
     g_printerr ("Failed to rename photos folder for diary '%s': %s\n", old_basename, strerror(errno));
     exit(EXIT_FAILURE);
   }
-
-  /* apply new name */
-  if (self->filename != NULL)
-    g_free (self->filename);
-  self->filename = g_strdup (new_name);
 
   /* Change photo links to new folder */
   old_photos_path_short = g_strdup_printf ("photos/%s", old_basename);
@@ -254,7 +261,7 @@ entry_delete (Entry *self)
   photos_path = g_strdup_printf ("%s/photos/%s", self->folder, basename);
   g_print ("deleting photos in '%s'\n", photos_path);
   dir = g_dir_open(photos_path, 0, &err);
-  while ((filename = g_dir_read_name(dir))) {
+  while (dir && (filename = g_dir_read_name(dir))) {
     filepath = g_strdup_printf ("%s/%s", photos_path, filename);
     file = g_file_new_for_path (filepath);
     if (!g_file_delete (file, NULL, &err)) {
@@ -267,13 +274,14 @@ entry_delete (Entry *self)
     g_object_unref (file);
     g_free (filepath);
   }
-  if (g_remove (photos_path) < 0) {
+  if (g_remove (photos_path) < 0 && errno != ENOENT) {
     g_printerr ("Failed to delete photos folder: %s\n", strerror (errno));
   }
 
   ret = TRUE;
 
 cleanup:
+  g_signal_emit_by_name (self, "deleted");
   g_free (photos_path);
 
   return ret;
@@ -298,7 +306,7 @@ entry_class_init (EntryClass *klass)
                          "filename",
                          "filename",
                          NULL  /* default value */,
-                         G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+                         G_PARAM_READWRITE);
   obj_properties[PROP_BASENAME] =
     g_param_spec_string ("basename",
                          "basename",
@@ -315,6 +323,18 @@ entry_class_init (EntryClass *klass)
   g_object_class_install_properties (object_class,
                                      NUM_PROPS,
                                      obj_properties);
+
+  obj_signals[SIGNAL_DELETED] =
+  g_signal_newv ("deleted",
+                 G_TYPE_FROM_CLASS (object_class),
+                 0, /* flags */
+                 NULL /* closure */,
+                 NULL /* accumulator */,
+                 NULL /* accumulator data */,
+                 g_cclosure_marshal_VOID__VOID,
+                 G_TYPE_NONE /* return_type */,
+                 0     /* n_params */,
+                 NULL  /* param_types */);
 }
 
 static void
@@ -334,11 +354,9 @@ entry_open (const gchar *folder, const gchar *filename)
 }
 
 Entry *
-entry_new (void)
+entry_new (const gchar *filename)
 {
     gchar *folder = utils_get_diary_folder ();
-    GDateTime *now = g_date_time_new_now_local ();
-    gchar *filename = g_date_time_format (now, "%Y-%m-%d - %A.md");
     Entry *entry = DIARY_ENTRY (entry_open (folder, filename));
     g_free (folder);
     return entry;

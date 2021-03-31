@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.1 -->
+<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
   <object class="GtkImage" id="image_back">
@@ -23,7 +23,7 @@
     <property name="default-width">640</property>
     <property name="default-height">480</property>
     <child>
-      <object class="GtkStack" id="content_box">
+      <object class="GtkStack" id="content_stack">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <child>
@@ -37,20 +37,20 @@
         <property name="can-focus">False</property>
         <property name="title" translatable="yes">Simple Diary</property>
         <child>
+          <object class="GtkButton" id="back_button">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="image">image_back</property>
+          </object>
+        </child>
+        <child>
           <object class="GtkButton" id="new_button">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
             <property name="image">image_new</property>
             <property name="always-show-image">True</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkButton" id="back_button">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
-            <property name="image">image_back</property>
           </object>
           <packing>
             <property name="position">1</property>

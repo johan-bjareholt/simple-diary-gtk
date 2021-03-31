@@ -1,6 +1,8 @@
 #include "entry_edit.h"
 #include "image_picker.h"
 #include "utils.h"
+#include "window.h"
+#include "headerbuttons.h"
 
 struct _EntryEdit
 {
@@ -12,9 +14,27 @@ struct _EntryEdit
 
   /* properties */
   Entry *entry;
+  gboolean unsaved_changes;
 };
 
-G_DEFINE_TYPE (EntryEdit, entry_edit, GTK_TYPE_BOX);
+static void entry_edit_save (EntryEdit *self);
+
+static void
+on_back_pressed (GtkWidget *widget)
+{
+  EntryEdit *self = DIARY_ENTRY_EDIT (widget);
+  entry_edit_save (self);
+  header_buttons_control_default_on_back_pressed (widget);
+}
+
+static void
+diary_header_buttons_control_init (HeaderButtonsControlInterface *iface)
+{
+    iface->on_back_pressed = on_back_pressed;
+}
+
+G_DEFINE_TYPE_WITH_CODE (EntryEdit, entry_edit, GTK_TYPE_BOX,
+    G_IMPLEMENT_INTERFACE (DIARY_TYPE_HEADER_BUTTONS, diary_header_buttons_control_init));
 
 typedef enum
 {
@@ -90,6 +110,9 @@ entry_edit_save(EntryEdit *self)
   GtkTextBuffer *buffer;
   GError *err = NULL;
 
+  if (self->unsaved_changes == FALSE)
+    return;
+
   buffer = gtk_text_view_get_buffer (self->text_view);
   gtk_text_buffer_get_bounds (buffer, &start, &end);
   text = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
@@ -102,6 +125,8 @@ entry_edit_save(EntryEdit *self)
     g_clear_error (&err);
     goto cleanup;
   }
+
+  self->unsaved_changes = FALSE;
 
 cleanup:
   g_free (text);
@@ -178,17 +203,17 @@ entry_edit_class_init (EntryEditClass *klass)
   gtk_widget_class_set_template_from_resource (widget_class,
       "/com/johan-bjareholt/simple-diary/ui/entry_edit.ui");
   gtk_widget_class_bind_template_child (widget_class, EntryEdit, text_view);
-  gtk_widget_class_bind_template_child (widget_class, EntryEdit,
-      add_image_button);
+  gtk_widget_class_bind_template_child (widget_class, EntryEdit, add_image_button);
 }
 
 static void
 entry_edit_init (EntryEdit *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
+  self->unsaved_changes = TRUE;
   g_signal_connect (self, "destroy", (GCallback) entry_edit_save, NULL);
   g_signal_connect (self->add_image_button, "clicked",
-      (GCallback) add_image_button_clicked, self);
+      G_CALLBACK (add_image_button_clicked), self);
 }
 
 GtkWidget *

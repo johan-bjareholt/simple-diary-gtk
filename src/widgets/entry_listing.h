@@ -8,5 +8,8 @@
 
 G_DECLARE_FINAL_TYPE (EntryListing, entry_listing, DIARY, ENTRY_LISTING, GtkBox)
 
+Entry *
+entry_listing_get_entry (EntryListing *listing);
+
 GtkWidget *
 entry_listing_new (Entry *entry);

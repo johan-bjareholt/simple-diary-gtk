@@ -1,5 +1,6 @@
 #include <gtk/gtk.h>
 #include <glib/gprintf.h>
+#include <errno.h>
 
 #include "utils.h"
 #include "settings.h"

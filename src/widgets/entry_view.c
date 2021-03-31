@@ -29,6 +29,7 @@ entry_view_class_init (EntryViewClass *klass)
 
   gtk_widget_class_set_template_from_resource (widget_class,
       "/com/johan-bjareholt/simple-diary/ui/entry_view.ui");
+  gtk_widget_class_bind_template_child (widget_class, EntryView, webview);
   gtk_widget_class_bind_template_child (widget_class, EntryView, edit_button);
   gtk_widget_class_bind_template_child (widget_class, EntryView, rename_button);
   gtk_widget_class_bind_template_child (widget_class, EntryView, delete_button);
@@ -60,9 +61,10 @@ static gboolean
 rename_button_clicked (GtkButton *button, gpointer user_data)
 {
   EntryView *self = (EntryView *) user_data;
+  GtkWindow *window = GTK_WINDOW (diary_window_get_instance ());
   GtkWidget *dialog =
-    gtk_message_dialog_new (NULL,
-                            GTK_DIALOG_DESTROY_WITH_PARENT,
+    gtk_message_dialog_new (window,
+                            GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL | GTK_DIALOG_USE_HEADER_BAR,
                             GTK_MESSAGE_QUESTION,
                             GTK_BUTTONS_OK_CANCEL,
                             "What do you want to rename it to?");
@@ -72,7 +74,7 @@ rename_button_clicked (GtkButton *button, gpointer user_data)
   GtkWidget *text_input = gtk_entry_new ();
   gtk_entry_set_text (GTK_ENTRY (text_input), basename);
   gtk_container_add (GTK_CONTAINER (dialog_box), text_input);
-  g_signal_connect (text_input, "activate", dialog_text_box_activate, dialog);
+  g_signal_connect (text_input, "activate", (GCallback) dialog_text_box_activate, dialog);
 
   gtk_widget_show_all (dialog);
 
@@ -101,17 +103,17 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
   diary_window = diary_window_get_instance ();
 
   dialog =
-    gtk_message_dialog_new (NULL,
-                            GTK_DIALOG_DESTROY_WITH_PARENT,
+    gtk_message_dialog_new (GTK_WINDOW (diary_window),
+                            GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL | GTK_DIALOG_USE_HEADER_BAR,
                             GTK_MESSAGE_QUESTION,
                             GTK_BUTTONS_YES_NO,
-                            "Are you sure you want to deleve this entry?");
+                            "Are you sure you want to delete this entry?");
 
   response = gtk_dialog_run (GTK_DIALOG (dialog));
   switch (response) {
     case GTK_RESPONSE_YES:
+      gtk_widget_destroy (GTK_WIDGET (self));
       entry_delete (self->entry);
-      diary_window_pop_view (diary_window);
       break;
     case GTK_RESPONSE_NO:
     case GTK_RESPONSE_DELETE_EVENT:
@@ -199,17 +201,13 @@ entry_view_init (EntryView *self)
   gtk_widget_init_template (GTK_WIDGET (self));
 
   self->entry = NULL;
-  self->webview = webkit_web_view_new ();
-  WebKitSettings *s = webkit_settings_new();
-  g_object_set(G_OBJECT(s),"allow-file-access-from-file-urls", TRUE, NULL);
-  webkit_web_view_set_settings(WEBKIT_WEB_VIEW(self->webview),s);
 
   g_signal_connect (self->edit_button, "clicked", (GCallback) edit_button_clicked, self);
   g_signal_connect (self->rename_button, "clicked", (GCallback) rename_button_clicked, self);
   g_signal_connect (self->delete_button, "clicked", (GCallback) delete_button_clicked, self);
 
   // This is necessary so it's reloaded if you edit an entry and go back
-  g_assert (g_signal_connect (self, "map", (GCallback) entry_view_load_html, NULL) > 0);
+  g_assert (g_signal_connect (self, "map", G_CALLBACK (entry_view_load_html), NULL) > 0);
 }
 
 GtkWidget *
@@ -219,9 +217,6 @@ entry_view_new (Entry *entry)
 
   self = g_object_new (DIARY_TYPE_ENTRY_VIEW, NULL);
   self->entry = entry;
-
-  // TODO: move to constructed cb?
-  gtk_box_pack_start (GTK_BOX (self), self->webview, TRUE, TRUE, 0);
 
   return GTK_WIDGET (self);
 }
