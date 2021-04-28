@@ -117,9 +117,6 @@ entry_edit_save(EntryEdit *self)
   gtk_text_buffer_get_bounds (buffer, &start, &end);
   text = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
 
-  if (strlen (text) == 0)
-    goto cleanup;
-
   if (!entry_write(self->entry, text, &err)) {
     g_error ("failed to save entry: %s\n", err->message);
     g_clear_error (&err);
@@ -130,14 +127,6 @@ entry_edit_save(EntryEdit *self)
 
 cleanup:
   g_free (text);
-}
-
-static void
-entry_edit_finalize (GObject *object)
-{
-  //EntryEdit *self = DIARY_ENTRY_EDIT (object);
-
-  G_OBJECT_CLASS (entry_edit_parent_class)->finalize (object);
 }
 
 static void
@@ -183,7 +172,6 @@ entry_edit_class_init (EntryEditClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-  object_class->finalize = entry_edit_finalize;
   object_class->constructed = entry_edit_constructed;
 
   object_class->get_property = entry_edit_get_property;
