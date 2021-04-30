@@ -2,11 +2,10 @@ project('simple-diary', 'c', meson_version: '>=0.49', warning_level: 2)
 
 gnome = import('gnome')
 
-gtk_dep = dependency('gtk+-3.0', version : '>=3.22')
-handy_dep = dependency('libhandy-1', version : '>=1.0')
-md4c_dep = dependency('md4c')
-md4c_html_dep = dependency('md4c-html')
-webkitgtk_dep = dependency('webkit2gtk-4.0')
+gtk_dep = dependency('gtk4', version : '>=4.0')
+adwaita_dep = dependency('libadwaita-1', version : '>=1.0')
+gdkpixbuf_dep = dependency('gdk-pixbuf-2.0', version : '>=2.0')
+gtkmdview_dep = dependency('gtkmdview')
 
 add_global_link_arguments(['-Wall'], language: 'c')
 

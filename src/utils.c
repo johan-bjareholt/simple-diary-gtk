@@ -3,25 +3,36 @@
 #include <errno.h>
 
 #include "utils.h"
+#include "window.h"
 #include "settings.h"
 
 void
 utils_error_dialog(gchar *format, ...)
 {
   GtkWidget *dialog;
+  GtkWindow *window;
   gchar *message;
   va_list args;
 
+  /* TODO GTK4: Fix broken dialog */
   va_start (args, format);
   g_vasprintf (&message, format, args);
+
+  window = GTK_WINDOW (diary_window_get_instance ());
   dialog =
-    gtk_message_dialog_new (NULL,
-                            0,
+    gtk_message_dialog_new (window,
+                            GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                             GTK_MESSAGE_ERROR,
                             GTK_BUTTONS_CLOSE,
                             message);
-  gtk_dialog_run (GTK_DIALOG (dialog));
-  gtk_widget_destroy (dialog);
+  gtk_widget_show (dialog);
+  gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
+
+
+  g_signal_connect_swapped (dialog,
+                            "response",
+                            G_CALLBACK (gtk_window_destroy),
+                            dialog);
 }
 
 gchar *

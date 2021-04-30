@@ -1,5 +1,5 @@
 #include <gtk/gtk.h>
-#include <handy.h>
+#include <adwaita.h>
 #include <errno.h>
 
 #include "window.h"
@@ -34,8 +34,8 @@ main(int argc, char *argv[])
 {
     GtkApplication *app;
 
-    gtk_init (&argc, &argv);
-    hdy_init ();
+    gtk_init ();
+    adw_init ();
 
     settings_init ();
     app = gtk_application_new ("com.bjareholt.johan.SimpleDiary", G_APPLICATION_FLAGS_NONE);

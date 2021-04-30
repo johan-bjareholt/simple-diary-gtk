@@ -1,10 +1,9 @@
-#include <webkit2/webkit2.h>
+#include <gtkmdview.h>
 
 #include "entry_view.h"
 #include "window.h"
 #include "entry.h"
 #include "entry_edit.h"
-#include "md2html.h"
 #include "settings.h"
 
 struct _EntryView
@@ -15,10 +14,19 @@ struct _EntryView
   GtkButton *rename_button;
   GtkButton *delete_button;
 
-  GtkWidget *webview;
+  GtkWidget *md_view;
+  GtkWidget *md_viewport;
 
   Entry *entry;
 };
+
+enum
+{
+  SIGNAL_DELETED,
+  LAST_SIGNAL,
+};
+
+static guint entry_view_signals[LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (EntryView, entry_view, GTK_TYPE_BOX);
 
@@ -29,10 +37,14 @@ entry_view_class_init (EntryViewClass *klass)
 
   gtk_widget_class_set_template_from_resource (widget_class,
       "/com/johan-bjareholt/simple-diary/ui/entry_view.ui");
-  gtk_widget_class_bind_template_child (widget_class, EntryView, webview);
+  gtk_widget_class_bind_template_child (widget_class, EntryView, md_viewport);
   gtk_widget_class_bind_template_child (widget_class, EntryView, edit_button);
   gtk_widget_class_bind_template_child (widget_class, EntryView, rename_button);
   gtk_widget_class_bind_template_child (widget_class, EntryView, delete_button);
+
+  entry_view_signals [SIGNAL_DELETED] =
+      g_signal_new ("deleted", G_TYPE_FROM_CLASS (klass),
+      0, 0, NULL, NULL, NULL, G_TYPE_NONE, 1, DIARY_TYPE_ENTRY);
 }
 
 static gboolean
@@ -57,63 +69,76 @@ dialog_text_box_activate (GtkEntry *entry, gpointer user_data)
   gtk_dialog_response (dialog, GTK_RESPONSE_OK);
 }
 
+static void
+rename_finished (GtkDialog *dialog, int response_id, gpointer user_data)
+{
+  EntryView *entry_view = DIARY_ENTRY_VIEW (user_data);
+  // TODO: find name_input in a better way from content area
+  GtkWidget *content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+  GtkWidget *name_input = gtk_widget_get_last_child(content_area);
+  GtkEntryBuffer *name_buffer = gtk_entry_get_buffer (GTK_ENTRY (name_input));
+
+  if (response_id == GTK_RESPONSE_OK) {
+    const gchar *text = gtk_entry_buffer_get_text (name_buffer);
+    // TODO: check if name contains dots or slashes
+    gchar *new_name = g_strdup_printf ("%s.md", text);
+    g_print ("%s\n", new_name);
+    entry_rename_file (entry_view->entry, new_name);
+  }
+
+  gtk_window_destroy (GTK_WINDOW (dialog));
+}
+
 static gboolean
 rename_button_clicked (GtkButton *button, gpointer user_data)
 {
   EntryView *self = (EntryView *) user_data;
-  GtkWindow *window = GTK_WINDOW (diary_window_get_instance ());
-  GtkWidget *dialog =
+  GtkWindow *window;
+  gchar *basename;
+  GtkWidget *dialog_box;
+  GtkWidget *dialog;
+  GtkEntryBuffer *entry_buffer;
+  GtkWidget *text_input;
+
+  window = GTK_WINDOW (diary_window_get_instance ());
+  dialog =
     gtk_message_dialog_new (window,
                             GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL | GTK_DIALOG_USE_HEADER_BAR,
                             GTK_MESSAGE_QUESTION,
                             GTK_BUTTONS_OK_CANCEL,
                             "What do you want to rename it to?");
-  GtkWidget *dialog_box = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-  gchar *basename;
+
+  dialog_box = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+
   g_object_get (self->entry, "basename", &basename, NULL);
-  GtkWidget *text_input = gtk_entry_new ();
-  gtk_entry_set_text (GTK_ENTRY (text_input), basename);
-  gtk_container_add (GTK_CONTAINER (dialog_box), text_input);
+  entry_buffer = gtk_entry_buffer_new (basename, -1);
+  text_input = gtk_entry_new_with_buffer (entry_buffer);
+  gtk_box_append (GTK_BOX (dialog_box), text_input);
   g_signal_connect (text_input, "activate", (GCallback) dialog_text_box_activate, dialog);
 
-  gtk_widget_show_all (dialog);
+  g_signal_connect (dialog,
+                    "response",
+                    G_CALLBACK (rename_finished),
+                    self);
 
-  gint ret = gtk_dialog_run (GTK_DIALOG (dialog));
-  if (ret == GTK_RESPONSE_OK) {
-    const gchar *text = gtk_entry_get_text (GTK_ENTRY (text_input));
-    /* TODO: check if name contains dots or slashes */
-    g_print ("%s\n", text);
-    gchar *new_name = g_strdup_printf ("%s.md", text);
-    entry_rename_file (self->entry, new_name);
-  }
+  gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
 
-  gtk_widget_destroy (dialog);
+  gtk_widget_show (dialog);
 
-  return FALSE;
+  return TRUE;
 }
 
-static gboolean
-delete_button_clicked (GtkButton *button, gpointer user_data)
+static void
+delete_finished (GtkDialog *dialog, int response_id, gpointer user_data)
 {
-  DiaryWindow *diary_window;
-  EntryView *self = (EntryView *) user_data;
-  GtkWidget *dialog;
-  gint response;
+  EntryView *entry_view = DIARY_ENTRY_VIEW (user_data);
 
-  diary_window = diary_window_get_instance ();
-
-  dialog =
-    gtk_message_dialog_new (GTK_WINDOW (diary_window),
-                            GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL | GTK_DIALOG_USE_HEADER_BAR,
-                            GTK_MESSAGE_QUESTION,
-                            GTK_BUTTONS_YES_NO,
-                            "Are you sure you want to delete this entry?");
-
-  response = gtk_dialog_run (GTK_DIALOG (dialog));
-  switch (response) {
+  switch (response_id) {
     case GTK_RESPONSE_YES:
-      gtk_widget_destroy (GTK_WIDGET (self));
-      entry_delete (self->entry);
+      /* TODO GTK4: Fix removal of entry */
+      //gtk_widget_destroy (GTK_WIDGET (self));
+      g_signal_emit_by_name (entry_view, "deleted", entry_view->entry);
+      entry_delete (entry_view->entry);
       break;
     case GTK_RESPONSE_NO:
     case GTK_RESPONSE_DELETE_EVENT:
@@ -123,81 +148,60 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
       break;
   }
 
-  gtk_widget_destroy (dialog);
+  gtk_window_destroy (GTK_WINDOW (dialog));
+}
+
+static gboolean
+delete_button_clicked (GtkButton *button, gpointer user_data)
+{
+  EntryView *self = (EntryView *) user_data;
+  DiaryWindow *window;
+  GtkWidget *dialog;
+
+  window = diary_window_get_instance ();
+
+  dialog =
+    gtk_message_dialog_new (GTK_WINDOW (window),
+                            GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL | GTK_DIALOG_USE_HEADER_BAR,
+                            GTK_MESSAGE_QUESTION,
+                            GTK_BUTTONS_YES_NO,
+                            "Are you sure you want to delete this entry?");
+
+  g_signal_connect (dialog,
+                    "response",
+                    G_CALLBACK (delete_finished),
+                    self);
+
+  gtk_widget_show (dialog);
 
   return TRUE;
 }
 
-static gchar *css_classes = "\
-img {\n\
-  max-width: 100%;\n\
-  object-fit: contain;\n\
-  overflow: hidden;\n\
-}\n\
-table, th, td {\n\
-  border: 0.02em solid black;\n\
-  border-collapse: collapse;\n\
-  padding: 0.2em;\n\
-}\n\
-body {\n\
-  width: 100%;\n\
-  padding: 0;\n\
-  border: 0;\n\
-  margin: 0;\n\
-}\n\
-\n\
-body.light {}\n\
-body.dark {\n\
-  color: #fff;\n\
-  background-color: #333;\n\
-}\n\
-";
-
-static gchar *html_full_format = "\
-<html>\n\
-<head>\n\
-<style>\n\
-%s\n\
-</style>\n\
-</head>\n\
-<body class=\"%s\">\n\
-%s\n\
-</body>\n\
-</html>\n\
-";
-
 static void
-entry_view_load_html (EntryView *self)
+entry_view_load_md (EntryView *self)
 {
   GError *err = NULL;
-  gchar *text_md, *text_html, *text_html_full;
+  gchar *text_md;
   gchar *folder;
-  gboolean dark_mode;
-  gchar *body_class;
 
   g_object_get (self->entry, "folder", &folder, NULL);
-  dark_mode = settings_get_dark_mode ();
-  body_class = dark_mode ? "dark" : "light";
 
   text_md = entry_read (self->entry, &err);
-  text_html = md2html (text_md, &err);
-  text_html_full = g_strdup_printf (html_full_format, css_classes, body_class, text_html);
-  //g_print (text_html_full);
-  gchar *folder_uri = g_strdup_printf ("file://%s/", folder);
-  webkit_web_view_load_html (WEBKIT_WEB_VIEW (self->webview), text_html_full, folder_uri);
 
-  gtk_widget_show_all (GTK_WIDGET (self));
+  self->md_view = gtk_md_view_new (text_md, folder);
 
-  g_free (folder_uri);
+  gtk_viewport_set_child (GTK_VIEWPORT (self->md_viewport), self->md_view);
+
+  //g_free (folder_uri);
   g_free (text_md);
-  g_free (text_html);
-  g_free (text_html_full);
   g_free (folder);
 }
 
 static void
 entry_view_init (EntryView *self)
 {
+  g_type_ensure (GTK_TYPE_MD_VIEW);
+
   gtk_widget_init_template (GTK_WIDGET (self));
 
   self->entry = NULL;
@@ -207,7 +211,7 @@ entry_view_init (EntryView *self)
   g_signal_connect (self->delete_button, "clicked", (GCallback) delete_button_clicked, self);
 
   // This is necessary so it's reloaded if you edit an entry and go back
-  g_assert (g_signal_connect (self, "map", G_CALLBACK (entry_view_load_html), NULL) > 0);
+  g_assert (g_signal_connect (self, "map", G_CALLBACK (entry_view_load_md), NULL) > 0);
 }
 
 GtkWidget *

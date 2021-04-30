@@ -8,6 +8,3 @@ G_DECLARE_FINAL_TYPE (EntryBrowser, entry_browser, DIARY, ENTRY_BROWSER, GtkBox)
 
 GtkWidget *
 entry_browser_new (void);
-
-void
-entry_browser_set_content (EntryBrowser *self, GtkWidget *widget);
