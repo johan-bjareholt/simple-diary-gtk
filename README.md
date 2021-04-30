@@ -17,8 +17,7 @@ Simple and lightweight diary app.
 ### Dependencies
 - meson
 - GTK+3
-- webkit2gtk-4.0
-- md4c and md4c-html
+- md4c
 
 ### Building
 

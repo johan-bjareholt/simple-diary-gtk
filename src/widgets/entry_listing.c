@@ -56,12 +56,14 @@ on_entry_filename_changed (Entry *entry, GParamSpecString *filename, gpointer us
   entry_listing_update_title (listing);
 }
 
+/*
 void
 entry_deleted (Entry *entry,
                EntryListing *listing)
 {
   gtk_widget_destroy (GTK_WIDGET (listing));
 }
+*/
 
 GtkWidget *
 entry_listing_new (Entry *entry)
@@ -71,7 +73,8 @@ entry_listing_new (Entry *entry)
 
   entry_listing_update_title (listing);
 
-  g_signal_connect (entry, "deleted", G_CALLBACK (entry_deleted), listing);
+  /* TODO GTK4: Why was this needed before? */
+  //g_signal_connect (entry, "deleted", G_CALLBACK (entry_deleted), listing);
 
   g_signal_connect (entry, "notify::filename", G_CALLBACK (on_entry_filename_changed), listing);
 

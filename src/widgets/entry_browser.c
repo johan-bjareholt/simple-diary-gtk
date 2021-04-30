@@ -1,4 +1,4 @@
-#include <handy.h>
+#include <adwaita.h>
 
 #include "headerbuttons.h"
 #include "entry_browser.h"
@@ -13,7 +13,7 @@ struct _EntryBrowser
 {
   GtkBox parent_instance;
 
-  HdyLeaflet *leaflet;
+  AdwLeaflet *leaflet;
   EntryList *entry_list;
   GtkBox *entry_list_box;
   GtkBox *content_box;
@@ -37,6 +37,30 @@ update_header_buttons (EntryBrowser *self)
 }
 
 static void
+entry_browser_set_content (EntryBrowser *self, GtkWidget *widget)
+{
+  // Remove old content
+  if (self->content_box_child != NULL) {
+    gtk_box_remove (self->content_box, self->content_box_child);
+  }
+
+  // Add new content if there is any
+  if (widget == NULL) {
+    self->content_box_child = NULL;
+    g_object_set (self->content_box, "visible", FALSE, NULL);
+    gtk_widget_set_hexpand (GTK_WIDGET (self->entry_list_box), TRUE);
+  } else {
+    self->content_box_child = widget;
+    gtk_box_append (self->content_box, self->content_box_child);
+    g_object_set (self->content_box, "visible", TRUE, NULL);
+    adw_leaflet_set_visible_child (self->leaflet, GTK_WIDGET (self->content_box));
+    gtk_widget_set_hexpand (GTK_WIDGET (self->entry_list_box), FALSE);
+  }
+
+  update_header_buttons (self);
+}
+
+static void
 on_enter (GtkWidget *widget, GtkButton *new_button, GtkButton *back_button, GtkButton *settings_button)
 {
   EntryBrowser *self = DIARY_ENTRY_BROWSER (widget);
@@ -51,11 +75,11 @@ on_enter (GtkWidget *widget, GtkButton *new_button, GtkButton *back_button, GtkB
   /*
   if (g_list_length (self->view_stack) == 0) {
     //g_object_set (self->content_box, "visible", FALSE, NULL);
-    //hdy_leaflet_set_visible_child (self->leaflet, GTK_WIDGET (self->entry_list_container));
+    //adw_leaflet_set_visible_child (self->leaflet, GTK_WIDGET (self->entry_list_container));
     //gtk_widget_set_hexpand (GTK_WIDGET (self->entry_list_container), TRUE);
   } else {
     //g_object_set (self->content_box, "visible", TRUE, NULL);
-    //hdy_leaflet_set_visible_child (self->leaflet, GTK_WIDGET (self->content_box));
+    //adw_leaflet_set_visible_child (self->leaflet, GTK_WIDGET (self->content_box));
     //gtk_widget_set_hexpand (GTK_WIDGET (self->entry_list_container), FALSE);
   }
   */
@@ -69,10 +93,21 @@ on_leave (GtkWidget *widget, GtkButton *new_button, GtkButton *back_button, GtkB
 }
 
 static void
+entry_view_deleted_cb (EntryView *entry_view, Entry *entry, gpointer user_data)
+{
+  gboolean removed;
+  EntryBrowser *browser = DIARY_ENTRY_BROWSER (user_data);
+  entry_browser_set_content (browser, NULL);
+  removed = entry_list_remove (browser->entry_list, entry);
+  g_assert (removed);
+}
+
+static void
 on_new_pressed (GtkWidget *widget)
 {
   EntryBrowser *self = DIARY_ENTRY_BROWSER (widget);
   DiaryWindow *diary_window = diary_window_get_instance ();
+  GtkListBoxRow *entry_listing_row;
   EntryListing *entry_listing;
   GtkWidget *entry_view;
   GtkWidget *entry_edit;
@@ -81,18 +116,22 @@ on_new_pressed (GtkWidget *widget)
   GDateTime *now = g_date_time_new_now_local ();
   gchar *filename = g_date_time_format (now, "%Y-%m-%d - %A.md");
 
-  entry_listing = entry_list_find (self->entry_list, filename);
-  if (entry_listing != NULL) {
+  entry_listing_row = entry_list_find (self->entry_list, filename);
+  if (entry_listing_row != NULL) {
     g_free (filename);
+    entry_listing = DIARY_ENTRY_LISTING (gtk_list_box_row_get_child (entry_listing_row));
     entry = entry_listing_get_entry (entry_listing);
   } else {
     entry = entry_new (filename);
-    entry_list_add_entry (self->entry_list, entry, TRUE);
+    entry_list_add_entry (self->entry_list, entry);
+    entry_listing_row = entry_list_find (self->entry_list, filename);
   }
+  g_assert (entry_listing != NULL);
 
   entry_edit = entry_edit_new (entry);
   entry_view = entry_view_new (entry);
-  entry_browser_set_content (self, GTK_WIDGET (entry_view));
+  g_signal_connect (entry_view, "deleted", G_CALLBACK (entry_view_deleted_cb), self);
+  entry_list_focus (self->entry_list, entry_listing_row);
   diary_window_push_view (diary_window, entry_edit);
 }
 
@@ -117,38 +156,6 @@ G_DEFINE_TYPE_WITH_CODE (EntryBrowser, entry_browser, GTK_TYPE_BOX,
     G_IMPLEMENT_INTERFACE (DIARY_TYPE_HEADER_BUTTONS, diary_header_buttons_control_init));
 
 static void
-on_content_destroyed (GtkWidget *content, gpointer user_data)
-{
-  EntryBrowser *browser = DIARY_ENTRY_BROWSER (user_data);
-  entry_browser_set_content (browser, NULL);
-}
-
-void
-entry_browser_set_content (EntryBrowser *self, GtkWidget *widget)
-{
-  // Remove old content
-  if (self->content_box_child != NULL) {
-    gtk_container_remove (GTK_CONTAINER (self->content_box), self->content_box_child);
-  }
-
-  // Add new content if there is any
-  if (widget == NULL) {
-    self->content_box_child = NULL;
-    g_object_set (self->content_box, "visible", FALSE, NULL);
-    gtk_widget_set_hexpand (GTK_WIDGET (self->entry_list_box), TRUE);
-  } else {
-    self->content_box_child = widget;
-    gtk_container_add (GTK_CONTAINER (self->content_box), self->content_box_child);
-    g_signal_connect (widget, "destroy", G_CALLBACK (on_content_destroyed), self);
-    g_object_set (self->content_box, "visible", TRUE, NULL);
-    hdy_leaflet_set_visible_child (self->leaflet, GTK_WIDGET (self->content_box));
-    gtk_widget_set_hexpand (GTK_WIDGET (self->entry_list_box), FALSE);
-  }
-
-  update_header_buttons (self);
-}
-
-static void
 entry_selected_changed_cb (EntryList *list, Entry *entry, EntryBrowser *browser)
 {
   g_print ("list: %p\n", list);
@@ -156,7 +163,9 @@ entry_selected_changed_cb (EntryList *list, Entry *entry, EntryBrowser *browser)
   if (entry == NULL) {
     entry_browser_set_content (browser, NULL);
   } else {
-    entry_browser_set_content (browser, GTK_WIDGET (entry_view_new (entry)));
+    GtkWidget *entry_view = entry_view_new (entry);
+    g_signal_connect (entry_view, "deleted", G_CALLBACK (entry_view_deleted_cb), browser);
+    entry_browser_set_content (browser, entry_view);
   }
 }
 
@@ -179,11 +188,11 @@ entry_browser_init (EntryBrowser *self)
   gtk_widget_init_template (GTK_WIDGET (self));
 
   self->entry_list = DIARY_ENTRY_LIST (entry_list_new ());
-  gtk_container_add (GTK_CONTAINER (self->entry_list_box), GTK_WIDGET (self->entry_list));
+  gtk_box_append (self->entry_list_box, GTK_WIDGET (self->entry_list));
 
   g_signal_connect (self->entry_list, "selection-changed", G_CALLBACK (entry_selected_changed_cb), self);
 
-  hdy_leaflet_set_visible_child (self->leaflet, GTK_WIDGET (self->entry_list_box));
+  adw_leaflet_set_visible_child (self->leaflet, GTK_WIDGET (self->entry_list_box));
 
   g_object_set (self->content_box, "visible", FALSE, NULL);
 }
