@@ -7,10 +7,13 @@
 
 #define DIARY_TYPE_ENTRY_LIST (entry_list_get_type())
 
-G_DECLARE_FINAL_TYPE (EntryList, entry_list, DIARY, ENTRY_LIST, GtkScrolledWindow)
+/* TODO GTK4: GtkScrolledWindow */
+G_DECLARE_FINAL_TYPE (EntryList, entry_list, DIARY, ENTRY_LIST, GtkWindow)
 
 GtkWidget * entry_list_new (void);
 
-void entry_list_add_entry (EntryList *self, Entry *entry, gboolean focus);
+void entry_list_add_entry (EntryList *self, Entry *entry);
+void entry_list_focus (EntryList *self, GtkListBoxRow *row);
 void entry_list_unfocus (EntryList *self);
-EntryListing * entry_list_find (EntryList *self, gchar *filename);
+GtkListBoxRow * entry_list_find (EntryList *self, gchar *filename);
+EntryListing * entry_list_delete (EntryList *self, Entry *entry);

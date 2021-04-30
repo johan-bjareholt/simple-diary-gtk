@@ -138,30 +138,31 @@ entry_edit_constructed (GObject *object)
   G_OBJECT_CLASS (entry_edit_parent_class)->constructed (object);
 }
 
+static void
+image_picked_cb (gchar *image_name, gchar *image_path, gpointer user_data)
+{
+  EntryEdit *entry_edit = DIARY_ENTRY_EDIT (user_data);
+  gchar *md_image_link;
+  GtkTextBuffer *text_buffer;
+
+  g_print ("Adding image %s at '%s'\n", image_name, image_path);
+  text_buffer = gtk_text_view_get_buffer (entry_edit->text_view);
+  md_image_link = g_strdup_printf ("![%s](<%s>)", image_name, image_path);
+  gtk_text_buffer_insert_at_cursor (text_buffer, md_image_link,
+      strlen (md_image_link));
+
+  g_free (md_image_link);
+}
+
 static gboolean
 add_image_button_clicked(GtkButton *button, gpointer user_data)
 {
   EntryEdit *entry_edit = DIARY_ENTRY_EDIT (user_data);
-  gchar *image_path;
-  gchar *image_name;
   gchar *basename;
 
   g_object_get (entry_edit->entry, "basename", &basename, NULL);
 
-  if (image_picker_run (basename, &image_name, &image_path)) {
-    gchar *md_image_link;
-    GtkTextBuffer *text_buffer;
-
-    g_print ("Adding image %s at '%s'\n", image_name, image_path);
-    text_buffer = gtk_text_view_get_buffer (entry_edit->text_view);
-    md_image_link = g_strdup_printf ("![%s](<%s>)", image_name, image_path);
-    gtk_text_buffer_insert_at_cursor (text_buffer, md_image_link,
-        strlen (md_image_link));
-
-    g_free (md_image_link);
-    g_free (image_name);
-    g_free (image_path);
-  }
+  image_picker_run (basename, image_picked_cb, entry_edit);
 
   return TRUE;
 }
@@ -207,7 +208,7 @@ entry_edit_init (EntryEdit *self)
 GtkWidget *
 entry_edit_new (Entry *entry)
 {
-    EntryEdit *entry_edit = g_object_new (DIARY_TYPE_ENTRY_EDIT, "entry", entry, NULL);
+  EntryEdit *entry_edit = g_object_new (DIARY_TYPE_ENTRY_EDIT, "entry", entry, NULL);
 
-    return GTK_WIDGET (entry_edit);
+  return GTK_WIDGET (entry_edit);
 }
