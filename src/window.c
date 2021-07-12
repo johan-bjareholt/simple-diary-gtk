@@ -1,4 +1,4 @@
-#include <handy.h>
+#include <adwaita.h>
 
 #include "headerbuttons.h"
 #include "utils.h"
@@ -90,7 +90,7 @@ diary_window_push_view (DiaryWindow *self, GtkWidget *new_view)
   }
   /* add new view */
   self->view_stack = g_list_append (self->view_stack, new_view);
-  gtk_container_add (GTK_CONTAINER (self->content_stack), new_view);
+  gtk_stack_add_child (self->content_stack, new_view);
 
   /* set new view in focus */
   gtk_stack_set_visible_child (self->content_stack, new_view);
@@ -108,7 +108,7 @@ diary_window_pop_view(DiaryWindow *self)
   diary_window_update_header_buttons (self, prev_view, current_view);
 
   /* remove the current view */
-  gtk_widget_destroy (current_view);
+  gtk_stack_remove (self->content_stack, current_view);
 
   /* add previous view */
   gtk_stack_set_visible_child (self->content_stack, prev_view);

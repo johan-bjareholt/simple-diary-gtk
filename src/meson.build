@@ -6,7 +6,6 @@ diary_src = [
   'main.c',
   'notification.c',
   'utils.c',
-  'md2html.c',
   'settings.c',
   'window.c',
 
@@ -22,9 +21,7 @@ diary_src = [
 diary_deps = [
   gtk_dep,
   handy_dep,
-  md4c_dep,
-  md4c_html_dep,
-  webkitgtk_dep
+  md4c_dep
 ]
 
 
@@ -35,5 +32,3 @@ executable(
   gui_app: true,
   link_args: '-rdynamic',
 )
-
-executable('adaptive', ['adaptive.c'], dependencies : diary_deps, gui_app : true)

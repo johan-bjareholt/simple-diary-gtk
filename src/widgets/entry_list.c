@@ -5,7 +5,8 @@
 
 struct _EntryList
 {
-  GtkScrolledWindow parent_instance;
+  /* TODO GTK4: GtkScrolledWindow */
+  GtkWindow parent_instance;
 
   GtkListBox *entry_list_box;
 };
@@ -30,8 +31,8 @@ list_box_sort (GtkListBoxRow *row1, GtkListBoxRow *row2, gpointer user_data)
   gchar *name1;
   gchar *name2;
 
-  listing1 = DIARY_ENTRY_LISTING (gtk_bin_get_child (GTK_BIN (row1)));
-  listing2 = DIARY_ENTRY_LISTING (gtk_bin_get_child (GTK_BIN (row2)));
+  listing1 = DIARY_ENTRY_LISTING (gtk_list_box_row_get_child (GTK_LIST_BOX_ROW (row1)));
+  listing2 = DIARY_ENTRY_LISTING (gtk_list_box_row_get_child (GTK_LIST_BOX_ROW (row2)));
 
   entry1 = entry_listing_get_entry (listing1);
   entry2 = entry_listing_get_entry (listing2);
@@ -78,15 +79,16 @@ static void
 entry_selected_changed_cb (GtkListBox *entry_list_box, gpointer user_data)
 {
   EntryList *list = DIARY_ENTRY_LIST (user_data);
+  GtkListBoxRow *row;
   Entry *entry = NULL;
 
-  GtkListBoxRow *row = gtk_list_box_get_selected_row (entry_list_box);
+  row = gtk_list_box_get_selected_row (GTK_LIST_BOX (entry_list_box));
   if (row) {
     gchar *name;
     GtkWidget *child;
     EntryListing *listing;
 
-    child = gtk_bin_get_child (GTK_BIN (row));
+    child = gtk_list_box_row_get_child (row);
     listing = DIARY_ENTRY_LISTING (child);
     entry = entry_listing_get_entry (listing);
     g_object_get (entry, "basename", &name, NULL);
@@ -99,17 +101,12 @@ entry_selected_changed_cb (GtkListBox *entry_list_box, gpointer user_data)
 }
 
 void
-entry_list_add_entry (EntryList *self, Entry *entry, gboolean focus)
+entry_list_add_entry (EntryList *self, Entry *entry)
 {
   GtkWidget *entry_listing = GTK_WIDGET (entry_listing_new (entry));
   GtkWidget *row_widget = gtk_list_box_row_new ();
-  g_signal_connect_swapped (entry_listing, "destroy", G_CALLBACK (gtk_widget_destroy), row_widget);
-  gtk_container_add (GTK_CONTAINER (row_widget), entry_listing);
+  gtk_list_box_row_set_child (GTK_LIST_BOX_ROW (row_widget), entry_listing);
   gtk_list_box_insert (self->entry_list_box, row_widget, -1);
-  if (focus) {
-    gtk_list_box_select_row (self->entry_list_box, GTK_LIST_BOX_ROW (row_widget));
-  }
-  gtk_widget_show_all (GTK_WIDGET (self));
 }
 
 static GtkListBox *
@@ -126,7 +123,7 @@ generate_entry_list (EntryList *self, const gchar *dir_path, GPtrArray *files)
   for (int i=0; i < files->len; i++) {
     filename = g_ptr_array_index (files, i);
     Entry *entry = entry_open (dir_path, filename);
-    entry_list_add_entry (self, entry, FALSE);
+    entry_list_add_entry (self, entry);
   }
 
   return self->entry_list_box;
@@ -141,64 +138,66 @@ load_entry_list (EntryList *self)
   dir_path = utils_get_diary_folder ();
   files = list_entries (dir_path);
   self->entry_list_box = generate_entry_list (self, dir_path, files);
-  gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (self->entry_list_box));
-  gtk_widget_show_all (GTK_WIDGET (self));
+  gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (self), GTK_WIDGET (self->entry_list_box));
 
   g_free (dir_path);
   g_ptr_array_unref (files);
 }
 
 static void
-unload_entry_list (EntryList *self, gpointer user_data)
-{
-  gtk_container_remove (GTK_CONTAINER (self),
-      GTK_WIDGET (self->entry_list_box));
-  self->entry_list_box = NULL;
-}
-
-static void
 entry_list_class_init (EntryListClass *klass)
 {
-  //GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
-
   entry_list_signals [SIGNAL_SELECTION_CHANGED] =
       g_signal_new ("selection-changed", G_TYPE_FROM_CLASS (klass),
       0, 0, NULL, NULL, NULL, G_TYPE_NONE, 1, DIARY_TYPE_ENTRY);
 }
 
 typedef struct {
-  EntryListing *match;
+  gboolean found;
   gchar *filename;
 } EntryFindCtx;
 
 static void
-is_entry (GtkBin *row, EntryFindCtx *ctx)
+is_entry (GtkListBoxRow *row, EntryFindCtx *ctx)
 {
   Entry *entry;
   gchar *filename;
   EntryListing *listing;
-  if (ctx->match)
+  if (ctx->found)
     return;
 
-  listing = DIARY_ENTRY_LISTING (gtk_bin_get_child (row));
+  listing = DIARY_ENTRY_LISTING (gtk_list_box_row_get_child (row));
 
   entry = entry_listing_get_entry (listing);
   g_object_get (entry, "filename", &filename, NULL);
   if (g_strcmp0 (filename, ctx->filename) == 0) {
-    ctx->match = listing;
+    ctx->found = TRUE;
   }
 }
 
-EntryListing *
+GtkListBoxRow *
 entry_list_find (EntryList *self, gchar *filename)
 {
   EntryFindCtx ctx;
-  ctx.match = NULL;
+  ctx.found = FALSE;
   ctx.filename = filename;
+  GtkListBoxRow *row = NULL;
 
-  gtk_container_foreach (GTK_CONTAINER (self->entry_list_box), (GtkCallback) is_entry, &ctx);
+  /* TODO: Fix ugly loop */
+  gint i = 0;
+  do {
+    row = gtk_list_box_get_row_at_index (self->entry_list_box, i);
+    if (row == NULL) {
+      break;
+    }
+    is_entry (GTK_LIST_BOX_ROW (row), &ctx);
+    if (ctx.found) {
+      break;
+    }
+    i++;
+  } while (TRUE);
 
-  return ctx.match;
+  return row;
 }
 
 void
@@ -211,17 +210,12 @@ static void
 entry_list_init (EntryList *self)
 {
   self->entry_list_box = NULL;
-  // We load and unload on ever map/unmap so the entry list is updated in case
-  // a entry has been deleted or added
   load_entry_list (self);
-  g_assert (g_signal_connect (self, "destroy", (GCallback) unload_entry_list, NULL) > 0);
 
   gtk_list_box_set_sort_func (self->entry_list_box, list_box_sort, NULL, NULL);
 
   gtk_widget_set_vexpand (GTK_WIDGET (self), TRUE);
   gtk_widget_set_hexpand (GTK_WIDGET (self), TRUE);
-
-  gtk_widget_show_all (GTK_WIDGET (self));
 }
 
 GtkWidget *
@@ -229,4 +223,42 @@ entry_list_new (void)
 {
     GtkWidget *entry_list = g_object_new (DIARY_TYPE_ENTRY_LIST, NULL);
     return entry_list;
+}
+
+gboolean
+entry_list_remove (EntryList *self, Entry *entry)
+{
+  gboolean ret = FALSE;
+  GtkListBoxRow *row;
+  gchar *filename;
+
+  g_object_get (entry, "filename", &filename, NULL);
+
+  row = entry_list_find (self, filename);
+  if (!row) {
+    goto no_match;
+  }
+
+  gtk_list_box_remove (self->entry_list_box, GTK_WIDGET (row));
+
+  ret = TRUE;
+
+no_match:
+  g_free (filename);
+  return ret;
+}
+
+void
+entry_list_focus (EntryList *self, GtkListBoxRow *row)
+{
+  GtkWidget *child;
+  EntryListing *listing;
+  Entry *entry;
+
+  gtk_list_box_select_row (self->entry_list_box, GTK_LIST_BOX_ROW (row));
+
+  child = gtk_list_box_row_get_child (row);
+  listing = DIARY_ENTRY_LISTING (child);
+  entry = entry_listing_get_entry (listing);
+  g_signal_emit_by_name (self, "selection-changed", entry);
 }

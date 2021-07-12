@@ -1,5 +1,6 @@
 #include "image_picker.h"
 #include "utils.h"
+#include "window.h"
 
 struct _ImagePicker
 {
@@ -11,10 +12,15 @@ struct _ImagePicker
 
   GtkEntry *name_entry;
 
-  GtkRadioButton *file_radio_button;
-  GtkFileChooserButton *file_button;
+  GtkCheckButton *file_radio_button;
+  GtkButton *file_button;
 
-  GtkRadioButton *clipboard_radio_button;
+  GtkCheckButton *clipboard_radio_button;
+
+  /* arguments */
+  gchar *basename;
+  void (*finished_cb)(gchar *image_name, gchar *image_path, gpointer user_data);
+  gpointer user_data;
 };
 
 G_DEFINE_TYPE (ImagePicker, image_picker, GTK_TYPE_DIALOG);
@@ -22,7 +28,6 @@ G_DEFINE_TYPE (ImagePicker, image_picker, GTK_TYPE_DIALOG);
 static void
 image_picker_class_init (ImagePickerClass *klass)
 {
-  //GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   gtk_widget_class_set_template_from_resource (widget_class,
@@ -100,13 +105,16 @@ image_picker_save_from_file (ImagePicker *image_picker, gchar *basename,
   gchar *image_path_absolute;
   GError *err = NULL;
 
+  /* TODO GTK4: fix file chooser */
+  src_path = g_strdup ("test");
+  /*
   src_path = gtk_file_chooser_get_filename (
       GTK_FILE_CHOOSER (image_picker->file_button));
   if (src_path == NULL) {
-    /* TODO: display warning to user */
     utils_error_dialog ("No file chosen, ignoring\n");
     goto error;
   }
+  */
   image_extension = utils_get_file_extension (src_path);
 
   /* relative path */
@@ -141,8 +149,8 @@ static gboolean
 image_picker_save_from_clipboard (gchar *basename,
                                  gchar **image_name, gchar **image_path_relative)
 {
-  GtkClipboard *clipboard;
-  GdkPixbuf *pixbuf;
+  //GdkClipboard *clipboard;
+  //GdkPixbuf *pixbuf;
   gchar *target_dir_absolute;
   gchar *target_dir_relative;
   gchar *image_path_absolute;
@@ -159,19 +167,22 @@ image_picker_save_from_clipboard (gchar *basename,
   image_path_absolute = g_strdup_printf ("%s/%s.jpg", target_dir_absolute, *image_name);
   g_free (target_dir_absolute);
 
-  clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+  /* TODO GTK4: Fix */
+  /*
+  clipboard = gdk_display_get_clipboard (gdk_display_get_default ());
 
-  pixbuf = gtk_clipboard_wait_for_image (clipboard);
+  pixbuf = gdk_clipboard_wait_for_image (clipboard);
 
   if (pixbuf == NULL) {
       utils_error_dialog ("Could not fetch image from clipboard\n");
       goto out;
   }
   gdk_pixbuf_save (pixbuf, image_path_absolute, "jpeg", &err, "quality", "100", NULL);
+  */
 
   ret = TRUE;
 
-out:
+//out:
   g_free (image_path_absolute);
   if (err != NULL) {
     utils_error_dialog ("Failed to save image: %s\n", err->message);
@@ -203,26 +214,16 @@ get_selected_radiobutton (ImagePicker *image_picker) {
   return RADIO_BUTTON_UNKNOWN;
 }
 
-/* TODO: Fix so links are not absolute but relative */
-/* TODO: Make "file picker" inactive when clipboard is chosen */
-gboolean
-image_picker_run (gchar *basename, gchar **image_name, gchar **image_path_relative)
+static void
+image_picker_response (GtkDialog *dialog, int response_id, gpointer user_data)
 {
-  gint result;
-  ImagePicker *image_picker;
+  ImagePicker *image_picker = DIARY_IMAGE_PICKER (dialog);
+  GtkEntryBuffer *buffer;
+  gchar *image_name = NULL;
+  gchar *image_path_relative = NULL;
   gboolean ret = FALSE;
 
-  g_assert (image_name != NULL);
-  g_assert (image_path_relative != NULL);
-
-  image_picker = g_object_new (DIARY_TYPE_IMAGE_PICKER, NULL);
-
-  result = gtk_dialog_run (GTK_DIALOG (image_picker));
-
-  *image_name = NULL;
-  *image_path_relative = NULL;
-
-  switch (result) {
+  switch (response_id) {
     case GTK_RESPONSE_OK:
       break;
     case GTK_RESPONSE_CANCEL:
@@ -230,21 +231,22 @@ image_picker_run (gchar *basename, gchar **image_name, gchar **image_path_relati
     case GTK_RESPONSE_DELETE_EVENT:
       goto out;
     default:
-      g_printerr ("Invalid GTK_RESPONSE enum: %d\n", result);
+      g_printerr ("Invalid GTK_RESPONSE enum: %d\n", response_id);
       g_assert_not_reached ();
       exit (1);
   }
 
-  *image_name = g_strdup (gtk_entry_get_text (image_picker->name_entry));
+  buffer = gtk_entry_get_buffer (image_picker->name_entry);
+  image_name = g_strdup (gtk_entry_buffer_get_text (buffer));
 
   switch (get_selected_radiobutton (image_picker)) {
     case RADIO_BUTTON_FILE:
-      ret = image_picker_save_from_file (image_picker, basename, image_name,
-                                         image_path_relative);
+      ret = image_picker_save_from_file (image_picker, image_picker->basename,
+                                         &image_name, &image_path_relative);
       break;
     case RADIO_BUTTON_CLIPBOARD:
-      ret = image_picker_save_from_clipboard (basename, image_name,
-                                              image_path_relative);
+      ret = image_picker_save_from_clipboard (image_picker->basename,
+                                              &image_name, &image_path_relative);
       break;
     default:
       g_assert_not_reached ();
@@ -253,13 +255,34 @@ image_picker_run (gchar *basename, gchar **image_name, gchar **image_path_relati
   }
 
 out:
-  gtk_widget_destroy (GTK_WIDGET (image_picker));
+  gtk_window_destroy (GTK_WINDOW (image_picker));
   if (ret == FALSE) {
-    if (*image_name != NULL) {
-      g_free (*image_name);
-      *image_name = NULL;
-    }
+    g_free (image_name);
+    g_free (image_path_relative);
+  } else {
+    // TODO: call callback
   }
 
-  return ret;
+}
+
+/* TODO: Fix so links are not absolute but relative */
+/* TODO: Make "file picker" inactive when clipboard is chosen */
+void
+image_picker_run (gchar *basename, void (*finished_cb)(gchar *image_name, gchar *image_path, gpointer user_data), gpointer user_data)
+{
+  ImagePicker *image_picker;
+  GtkWindow *window = GTK_WINDOW (diary_window_get_instance ());
+
+  image_picker = g_object_new (DIARY_TYPE_IMAGE_PICKER, NULL);
+  image_picker->basename = basename;
+  image_picker->finished_cb = finished_cb;
+  image_picker->user_data = user_data;
+
+  g_signal_connect (image_picker,
+                    "response",
+                    G_CALLBACK (image_picker_response),
+                    NULL);
+
+  gtk_window_set_transient_for (GTK_WINDOW (image_picker), window);
+  gtk_widget_show (GTK_WIDGET (image_picker));
 }
