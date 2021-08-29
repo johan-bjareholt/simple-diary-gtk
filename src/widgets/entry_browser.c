@@ -126,7 +126,6 @@ on_new_pressed (GtkWidget *widget)
     entry_list_add_entry (self->entry_list, entry);
     entry_listing_row = entry_list_find (self->entry_list, filename);
   }
-  g_assert (entry_listing != NULL);
 
   entry_edit = entry_edit_new (entry);
   entry_view = entry_view_new (entry);
