@@ -23,10 +23,6 @@
     <launchable type="desktop-id">@app_id@.desktop</launchable>
 
     <screenshots>
-        <screenshot type="default">
-            <caption>View of a single diary entry</caption>
-            <image>https://johan.bjareholt.com/img/projects/simple-diary/entry_view.png</image>
-        </screenshot>
         <screenshot>
             <caption>View of the list of diary entries</caption>
             <image>https://johan.bjareholt.com/img/projects/simple-diary/entry_list.png</image>
@@ -42,6 +38,14 @@
     <metadata_license>MIT</metadata_license>
     <content_rating type="oars-1.1"/>
     <releases>
+        <release version="v0.3.1" timestamp="2021-08-29">
+            <description>
+                Migrated from GTK3 to GTK4.
+                Migrated from libhandy to libadwaita.
+                Migrated from GtkWebKit to gtkmdview.
+                Rewrote image picker.
+            </description>
+        </release>
         <release version="v0.2.0" timestamp="2021-04-01">
             <description>
                 Improved UI for desktop.

@@ -31,7 +31,6 @@ Executable will be built at build/src/simple-diary
 ### Screenshots
 
 <div>
-  <img width="32%" src="https://johan.bjareholt.com/img/projects/simple-diary/entry_list.png">
-  <img width="32%" src="https://johan.bjareholt.com/img/projects/simple-diary/entry_view.png">
-  <img width="32%" src="https://johan.bjareholt.com/img/projects/simple-diary/entry_edit.png">
+  <img width="49%" src="https://johan.bjareholt.com/img/projects/simple-diary/entry_list.png">
+  <img width="49%" src="https://johan.bjareholt.com/img/projects/simple-diary/entry_edit.png">
 </div>
