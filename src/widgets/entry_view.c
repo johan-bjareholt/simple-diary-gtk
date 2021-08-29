@@ -132,13 +132,16 @@ static void
 delete_finished (GtkDialog *dialog, int response_id, gpointer user_data)
 {
   EntryView *entry_view = DIARY_ENTRY_VIEW (user_data);
+  Entry *entry = entry_view->entry;
 
   switch (response_id) {
     case GTK_RESPONSE_YES:
-      /* TODO GTK4: Fix removal of entry */
-      //gtk_widget_destroy (GTK_WIDGET (self));
+      /* At this point, entry_view will get deleted, so we need to save it to a
+       * local variable and ref it before emitting deleted */
+      g_object_ref (entry);
       g_signal_emit_by_name (entry_view, "deleted", entry_view->entry);
-      entry_delete (entry_view->entry);
+      entry_delete (entry);
+      g_object_unref (entry);
       break;
     case GTK_RESPONSE_NO:
     case GTK_RESPONSE_DELETE_EVENT:
