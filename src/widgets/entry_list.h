@@ -16,4 +16,4 @@ void entry_list_add_entry (EntryList *self, Entry *entry);
 void entry_list_focus (EntryList *self, GtkListBoxRow *row);
 void entry_list_unfocus (EntryList *self);
 GtkListBoxRow * entry_list_find (EntryList *self, gchar *filename);
-EntryListing * entry_list_delete (EntryList *self, Entry *entry);
+gboolean entry_list_remove (EntryList *self, Entry *entry);

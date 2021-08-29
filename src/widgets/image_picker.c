@@ -161,12 +161,10 @@ select_clipboard (GtkWidget *button, ImagePicker *image_picker)
   clipboard = gtk_widget_get_clipboard (GTK_WIDGET (image_picker));
   if (clipboard == NULL) {
     utils_error_dialog ("Failed to get clipboard");
-    goto error;
+    return;
   }
 
   gdk_clipboard_read_texture_async (clipboard, NULL, select_clipboard_cb, image_picker);
-
-error:
 }
 
 static gboolean
