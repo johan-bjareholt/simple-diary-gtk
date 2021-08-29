@@ -22,9 +22,21 @@
         <child>
           <object class="GtkButton" id="add_image_button">
             <property name="halign">center</property>
-            <property name="label" translatable="yes"> Add  Image</property>
-            <property name="receives-default">1</property>
-            <property name="icon-name">image-x-generic</property>
+            <child>
+              <object class="GtkBox">
+                <child>
+                  <object class="GtkImage">
+                    <property name="icon-name">document-edit</property>
+                    <property name="icon-name">image-x-generic</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes"> Add  Image</property>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
       </object>

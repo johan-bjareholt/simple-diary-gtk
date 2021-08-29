@@ -24,23 +24,56 @@
         <property name="halign">GTK_ALIGN_CENTER</property>
         <child>
           <object class="GtkButton" id="edit_button">
-            <property name="label" translatable="yes"> Edit</property>
-            <property name="receives-default">1</property>
-            <property name="icon-name">document-edit</property>
+            <child>
+              <object class="GtkBox">
+                <child>
+                  <object class="GtkImage">
+                    <property name="icon-name">document-edit</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes"> Edit</property>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
         <child>
           <object class="GtkButton" id="rename_button">
-            <property name="label" translatable="yes"> Rename</property>
-            <property name="receives-default">1</property>
-            <property name="icon-name">font-x-generic</property>
+            <child>
+              <object class="GtkBox">
+                <child>
+                  <object class="GtkImage">
+                    <property name="icon-name">font-x-generic</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes"> Rename</property>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
         <child>
           <object class="GtkButton" id="delete_button">
-            <property name="label" translatable="yes"> Delete</property>
-            <property name="receives-default">1</property>
-            <property name="icon-name">edit-delete</property>
+            <child>
+              <object class="GtkBox">
+                <child>
+                  <object class="GtkImage">
+                    <property name="icon-name">edit-delete</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes"> Delete</property>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
       </object>
