@@ -1,4 +1,6 @@
-project('simple-diary', 'c', meson_version: '>=0.49', warning_level: 2)
+project('simple-diary', 'c',
+  meson_version: '>=0.49',
+  default_options: ['warning_level=1'])
 
 gnome = import('gnome')
 
