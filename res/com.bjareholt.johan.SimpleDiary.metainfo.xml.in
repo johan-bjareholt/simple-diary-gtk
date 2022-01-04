@@ -38,6 +38,13 @@
     <metadata_license>MIT</metadata_license>
     <content_rating type="oars-1.1"/>
     <releases>
+        <release version="v0.3.2" timestamp="2022-01-04">
+            <description>
+                Improved settings view.
+                Change all icons to be symbolic for consistency.
+                Start using libadwaita 1.0 and utilize it more.
+            </description>
+        </release>
         <release version="v0.3.1" timestamp="2021-08-29">
             <description>
                 Migrated from GTK3 to GTK4.

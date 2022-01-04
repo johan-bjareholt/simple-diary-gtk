@@ -23,18 +23,11 @@
           <object class="GtkButton" id="add_image_button">
             <property name="halign">center</property>
             <child>
-              <object class="GtkBox">
-                <child>
-                  <object class="GtkImage">
-                    <property name="icon-name">document-edit</property>
-                    <property name="icon-name">image-x-generic</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="label" translatable="yes"> Add  Image</property>
-                  </object>
-                </child>
+              <object class="AdwButtonContent">
+                <property name="halign">center</property>
+                <property name="label"> Add Image</property>
+                <property name="icon-name">image-x-generic-symbolic</property>
+                <property name="use-underline">True</property>
               </object>
             </child>
           </object>
