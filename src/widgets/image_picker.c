@@ -248,7 +248,6 @@ image_picker_run (gchar *basename, void (*finished_cb)(gchar *image_name, gchar 
                     G_CALLBACK (image_picker_response),
                     NULL);
 
-  gtk_window_set_modal (GTK_WINDOW (image_picker), TRUE);
   gtk_window_set_transient_for (GTK_WINDOW (image_picker), window);
   gtk_widget_show (GTK_WIDGET (image_picker));
 }
