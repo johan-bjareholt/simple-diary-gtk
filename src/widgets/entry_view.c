@@ -4,6 +4,8 @@
 #include "window.h"
 #include "entry.h"
 #include "entry_edit.h"
+#include "entry_rename_dialog.h"
+#include "entry_delete_dialog.h"
 #include "settings.h"
 
 struct _EntryView
@@ -63,27 +65,18 @@ edit_button_clicked (GtkButton *button, gpointer user_data)
 }
 
 static void
-dialog_text_box_activate (GtkEntry *entry, gpointer user_data)
-{
-  GtkDialog *dialog = GTK_DIALOG (user_data);
-  gtk_dialog_response (dialog, GTK_RESPONSE_OK);
-}
-
-static void
 rename_finished (GtkDialog *dialog, int response_id, gpointer user_data)
 {
   EntryView *entry_view = DIARY_ENTRY_VIEW (user_data);
-  // TODO: find name_input in a better way from content area
-  GtkWidget *content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-  GtkWidget *name_input = gtk_widget_get_last_child(content_area);
-  GtkEntryBuffer *name_buffer = gtk_entry_get_buffer (GTK_ENTRY (name_input));
+  EntryRenameDialog *rename_dialog = DIARY_ENTRY_RENAME_DIALOG (dialog);
 
   if (response_id == GTK_RESPONSE_OK) {
-    const gchar *text = gtk_entry_buffer_get_text (name_buffer);
+    gchar *text = entry_rename_dialog_get_name (rename_dialog);
     // TODO: check if name contains dots or slashes
     gchar *new_name = g_strdup_printf ("%s.md", text);
     g_print ("%s\n", new_name);
     entry_rename_file (entry_view->entry, new_name);
+    g_free (text);
   }
 
   gtk_window_destroy (GTK_WINDOW (dialog));
@@ -94,27 +87,13 @@ rename_button_clicked (GtkButton *button, gpointer user_data)
 {
   EntryView *self = (EntryView *) user_data;
   GtkWindow *window;
-  gchar *basename;
-  GtkWidget *dialog_box;
   GtkWidget *dialog;
-  GtkEntryBuffer *entry_buffer;
-  GtkWidget *text_input;
+  gchar *basename;
 
   window = GTK_WINDOW (diary_window_get_instance ());
-  dialog =
-    gtk_message_dialog_new (window,
-                            GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL | GTK_DIALOG_USE_HEADER_BAR,
-                            GTK_MESSAGE_QUESTION,
-                            GTK_BUTTONS_OK_CANCEL,
-                            "What do you want to rename it to?");
-
-  dialog_box = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-
   g_object_get (self->entry, "basename", &basename, NULL);
-  entry_buffer = gtk_entry_buffer_new (basename, -1);
-  text_input = gtk_entry_new_with_buffer (entry_buffer);
-  gtk_box_append (GTK_BOX (dialog_box), text_input);
-  g_signal_connect (text_input, "activate", (GCallback) dialog_text_box_activate, dialog);
+
+  dialog = entry_rename_dialog_new (basename);
 
   g_signal_connect (dialog,
                     "response",
@@ -163,17 +142,14 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
 
   window = diary_window_get_instance ();
 
-  dialog =
-    gtk_message_dialog_new (GTK_WINDOW (window),
-                            GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL | GTK_DIALOG_USE_HEADER_BAR,
-                            GTK_MESSAGE_QUESTION,
-                            GTK_BUTTONS_YES_NO,
-                            "Are you sure you want to delete this entry?");
+  dialog = entry_delete_dialog_new ();
 
   g_signal_connect (dialog,
                     "response",
                     G_CALLBACK (delete_finished),
                     self);
+
+  gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
 
   gtk_widget_show (dialog);
 

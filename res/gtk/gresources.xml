@@ -6,6 +6,8 @@
         <file preprocess="xml-stripblanks">entry_listing.ui</file>
         <file preprocess="xml-stripblanks">entry_edit.ui</file>
         <file preprocess="xml-stripblanks">entry_view.ui</file>
+        <file preprocess="xml-stripblanks">entry_rename_dialog.ui</file>
+        <file preprocess="xml-stripblanks">entry_delete_dialog.ui</file>
         <file preprocess="xml-stripblanks">image_picker.ui</file>
         <file preprocess="xml-stripblanks">settings.ui</file>
     </gresource>
