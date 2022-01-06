@@ -190,7 +190,7 @@ entry_edit_class_init (EntryEditClass *klass)
                                      obj_properties);
 
   gtk_widget_class_set_template_from_resource (widget_class,
-      "/com/johan-bjareholt/simple-diary/ui/entry_edit.ui");
+      "/com/bjareholt/johan/simple-diary/ui/entry_edit.ui");
   gtk_widget_class_bind_template_child (widget_class, EntryEdit, text_view);
   gtk_widget_class_bind_template_child (widget_class, EntryEdit, add_image_button);
 }

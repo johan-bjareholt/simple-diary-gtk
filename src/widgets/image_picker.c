@@ -35,7 +35,7 @@ image_picker_class_init (ImagePickerClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   gtk_widget_class_set_template_from_resource (widget_class,
-      "/com/johan-bjareholt/simple-diary/ui/image_picker.ui");
+      "/com/bjareholt/johan/simple-diary/ui/image_picker.ui");
 
   gtk_widget_class_bind_template_child (widget_class, ImagePicker, add_button);
   gtk_widget_class_bind_template_child (widget_class, ImagePicker, cancel_button);

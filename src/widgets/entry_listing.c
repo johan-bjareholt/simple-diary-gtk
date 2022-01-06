@@ -19,7 +19,7 @@ entry_listing_class_init (EntryListingClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-  gtk_widget_class_set_template_from_resource (widget_class, "/com/johan-bjareholt/simple-diary/ui/entry_listing.ui");
+  gtk_widget_class_set_template_from_resource (widget_class, "/com/bjareholt/johan/simple-diary/ui/entry_listing.ui");
   gtk_widget_class_bind_template_child (widget_class, EntryListing, name_label);
 }
 

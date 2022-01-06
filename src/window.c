@@ -18,6 +18,7 @@ struct _DiaryWindow
   GtkButton *new_button;
   GtkButton *back_button;
   GtkButton *settings_button;
+  GtkButton *about_button;
 
   /* views */
   GList *view_stack;
@@ -38,11 +39,12 @@ static void
 diary_window_class_init (DiaryWindowClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
-  gtk_widget_class_set_template_from_resource (widget_class, "/com/johan-bjareholt/simple-diary/ui/window.ui");
+  gtk_widget_class_set_template_from_resource (widget_class, "/com/bjareholt/johan/simple-diary/ui/window.ui");
   gtk_widget_class_bind_template_child (widget_class, DiaryWindow, content_stack);
   gtk_widget_class_bind_template_child (widget_class, DiaryWindow, new_button);
   gtk_widget_class_bind_template_child (widget_class, DiaryWindow, back_button);
   gtk_widget_class_bind_template_child (widget_class, DiaryWindow, settings_button);
+  gtk_widget_class_bind_template_child (widget_class, DiaryWindow, about_button);
 }
 
 static gpointer
@@ -157,6 +159,34 @@ settings_button_pressed (GtkWidget *widget, gpointer user_data)
   return FALSE;
 }
 
+gboolean
+about_button_pressed (GtkWidget *widget, gpointer user_data)
+{
+  GdkPixbuf *icon_pixbuf;
+  GdkTexture *icon_texture;
+  GError *err = NULL;
+  gchar *authors[2] = { "Johan Bjäreholt", NULL };
+
+  icon_pixbuf = gdk_pixbuf_new_from_resource ("/com/bjareholt/johan/simple-diary/icons/logo.svg", &err);
+  if (icon_pixbuf == NULL) {
+    g_printerr ("failed to load image: %s\n", err->message);
+    g_clear_error (&err);
+    return TRUE;
+  }
+
+  icon_texture = gdk_texture_new_for_pixbuf (icon_pixbuf);
+
+  gtk_show_about_dialog (NULL,
+                         "program-name", "Simple Diary",
+                         "title", "About",
+                         "logo", icon_texture,
+                         "authors", &authors,
+                         "license-type", GTK_LICENSE_GPL_3_0,
+                         "website", "https://github.com/johan-bjareholt/simple-diary-gtk",
+                         NULL);
+  return TRUE;
+}
+
 static void
 diary_window_init (DiaryWindow *self)
 {
@@ -168,6 +198,7 @@ diary_window_init (DiaryWindow *self)
   g_signal_connect (self->new_button, "clicked", (GCallback) new_button_pressed, self);
   g_signal_connect (self->back_button, "clicked", (GCallback) back_button_pressed, self);
   g_signal_connect (self->settings_button, "clicked", (GCallback) settings_button_pressed, self);
+  g_signal_connect (self->about_button, "clicked", (GCallback) about_button_pressed, self);
 }
 
 GtkApplicationWindow *

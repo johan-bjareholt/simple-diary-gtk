@@ -31,7 +31,7 @@ settings_view_class_init (SettingsViewClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   gtk_widget_class_set_template_from_resource (widget_class,
-      "/com/johan-bjareholt/simple-diary/ui/settings.ui");
+      "/com/bjareholt/johan/simple-diary/ui/settings.ui");
   gtk_widget_class_bind_template_child (widget_class, SettingsView,
       dark_mode_toggle);
 }

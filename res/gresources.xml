@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+    <gresource prefix="/com/bjareholt/johan/simple-diary">
+        <file preprocess="xml-stripblanks">ui/window.ui</file>
+        <file preprocess="xml-stripblanks">ui/entry_browser.ui</file>
+        <file preprocess="xml-stripblanks">ui/entry_listing.ui</file>
+        <file preprocess="xml-stripblanks">ui/entry_edit.ui</file>
+        <file preprocess="xml-stripblanks">ui/entry_view.ui</file>
+        <file preprocess="xml-stripblanks">ui/entry_rename_dialog.ui</file>
+        <file preprocess="xml-stripblanks">ui/entry_delete_dialog.ui</file>
+        <file preprocess="xml-stripblanks">ui/image_picker.ui</file>
+        <file preprocess="xml-stripblanks">ui/settings.ui</file>
+
+        <file>icons/logo.svg</file>
+    </gresource>
+</gresources>

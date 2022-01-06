@@ -173,7 +173,7 @@ entry_browser_class_init (EntryBrowserClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-  gtk_widget_class_set_template_from_resource (widget_class, "/com/johan-bjareholt/simple-diary/ui/entry_browser.ui");
+  gtk_widget_class_set_template_from_resource (widget_class, "/com/bjareholt/johan/simple-diary/ui/entry_browser.ui");
   gtk_widget_class_bind_template_child (widget_class, EntryBrowser, leaflet);
   gtk_widget_class_bind_template_child (widget_class, EntryBrowser, entry_list_box);
   gtk_widget_class_bind_template_child (widget_class, EntryBrowser, content_box);

@@ -38,7 +38,7 @@ entry_view_class_init (EntryViewClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   gtk_widget_class_set_template_from_resource (widget_class,
-      "/com/johan-bjareholt/simple-diary/ui/entry_view.ui");
+      "/com/bjareholt/johan/simple-diary/ui/entry_view.ui");
   gtk_widget_class_bind_template_child (widget_class, EntryView, md_viewport);
   gtk_widget_class_bind_template_child (widget_class, EntryView, edit_button);
   gtk_widget_class_bind_template_child (widget_class, EntryView, rename_button);

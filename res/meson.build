@@ -1,5 +1,8 @@
-subdir('gtk')
-subdir('icons')
+
+gresources = gnome.compile_resources(
+   'gresources',
+   'gresources.xml',
+)
 
 conf_data = configuration_data()
 conf_data.set('app_id', app_id)
