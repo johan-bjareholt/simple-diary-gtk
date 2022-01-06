@@ -182,6 +182,7 @@ save_image (ImagePicker *image_picker)
   image_name = g_strdup (gtk_entry_buffer_get_text (buffer));
 
   /* relative path */
+  g_print ("basename: %s\n", image_picker->basename);
   target_dir_relative = utils_get_photos_folder (image_picker->basename, FALSE);
   image_path_relative = g_strdup_printf ("%s/%s.png", target_dir_relative, image_name);
 
@@ -229,6 +230,8 @@ image_picker_response (GtkDialog *dialog, int response_id, gpointer user_data)
       gtk_window_destroy (GTK_WINDOW (image_picker));
     }
   }
+
+  g_free (image_picker->basename);
 }
 
 void
@@ -239,7 +242,7 @@ image_picker_run (gchar *basename, void (*finished_cb)(gchar *image_name, gchar 
 
   window = GTK_WINDOW (diary_window_get_instance ());
   image_picker = g_object_new (DIARY_TYPE_IMAGE_PICKER, NULL);
-  image_picker->basename = basename;
+  image_picker->basename = g_strdup (basename);
   image_picker->finished_cb = finished_cb;
   image_picker->user_data = user_data;
 

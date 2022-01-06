@@ -164,6 +164,8 @@ add_image_button_clicked(GtkButton *button, gpointer user_data)
 
   image_picker_run (basename, image_picked_cb, entry_edit);
 
+  g_free (basename);
+
   return TRUE;
 }
 

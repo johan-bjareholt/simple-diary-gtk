@@ -74,9 +74,10 @@ rename_finished (GtkDialog *dialog, int response_id, gpointer user_data)
     gchar *text = entry_rename_dialog_get_name (rename_dialog);
     // TODO: check if name contains dots or slashes
     gchar *new_name = g_strdup_printf ("%s.md", text);
-    g_print ("%s\n", new_name);
+    g_print ("Renaming entry to '%s'\n", new_name);
     entry_rename_file (entry_view->entry, new_name);
     g_free (text);
+    g_free (new_name);
   }
 
   gtk_window_destroy (GTK_WINDOW (dialog));
@@ -103,6 +104,8 @@ rename_button_clicked (GtkButton *button, gpointer user_data)
   gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
 
   gtk_widget_show (dialog);
+
+  g_free (basename);
 
   return TRUE;
 }
@@ -149,7 +152,7 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
                     G_CALLBACK (delete_finished),
                     self);
 
-  gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
+  gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
 
   gtk_widget_show (dialog);
 

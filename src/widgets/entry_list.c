@@ -30,6 +30,7 @@ list_box_sort (GtkListBoxRow *row1, GtkListBoxRow *row2, gpointer user_data)
   Entry *entry2;
   gchar *name1;
   gchar *name2;
+  gint ret;
 
   listing1 = DIARY_ENTRY_LISTING (gtk_list_box_row_get_child (GTK_LIST_BOX_ROW (row1)));
   listing2 = DIARY_ENTRY_LISTING (gtk_list_box_row_get_child (GTK_LIST_BOX_ROW (row2)));
@@ -40,7 +41,12 @@ list_box_sort (GtkListBoxRow *row1, GtkListBoxRow *row2, gpointer user_data)
   g_object_get (entry1, "filename", &name1, NULL);
   g_object_get (entry2, "filename", &name2, NULL);
 
-  return -g_strcmp0 (name1, name2);
+  ret = -g_strcmp0 (name1, name2);
+
+  g_free (name1);
+  g_free (name2);
+
+  return ret;
 }
 
 static GPtrArray *
@@ -93,6 +99,7 @@ entry_selected_changed_cb (GtkListBox *entry_list_box, gpointer user_data)
     entry = entry_listing_get_entry (listing);
     g_object_get (entry, "basename", &name, NULL);
     g_print ("%s\n", name);
+    g_free (name);
   } else {
     g_print ("entry unselected\n");
   }
@@ -173,6 +180,7 @@ is_entry (GtkListBoxRow *row, EntryFindCtx *ctx)
   if (g_strcmp0 (filename, ctx->filename) == 0) {
     ctx->found = TRUE;
   }
+  g_free (filename);
 }
 
 GtkListBoxRow *

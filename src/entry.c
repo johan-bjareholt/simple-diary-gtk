@@ -260,17 +260,18 @@ entry_delete (Entry *self)
 
   photos_path = g_strdup_printf ("%s/photos/%s", self->folder, basename);
   g_print ("deleting photos in '%s'\n", photos_path);
-  dir = g_dir_open(photos_path, 0, &err);
+  dir = g_dir_open(photos_path, 0, NULL);
   while (dir && (filename = g_dir_read_name(dir))) {
+    gchar *filepath;
+    GFile *file;
+
     filepath = g_strdup_printf ("%s/%s", photos_path, filename);
     file = g_file_new_for_path (filepath);
     if (!g_file_delete (file, NULL, &err)) {
       g_warning ("Failed to remove file '%s': %s", filepath, err->message);
-      g_object_unref (file);
-      g_free (filepath);
       g_clear_error (&err);
-      goto cleanup;
     }
+
     g_object_unref (file);
     g_free (filepath);
   }
@@ -283,6 +284,11 @@ entry_delete (Entry *self)
 cleanup:
   g_signal_emit_by_name (self, "deleted");
   g_free (photos_path);
+  g_free (basename);
+  g_free (filepath);
+  if (dir) {
+    g_dir_close (dir);
+  }
 
   return ret;
 }

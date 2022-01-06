@@ -36,9 +36,23 @@ diary_window_get_instance (void)
 }
 
 static void
+diary_window_finalize (DiaryWindow *self)
+{
+  while (self->view_stack != NULL) {
+      diary_window_pop_view (self);
+  }
+
+  G_OBJECT_CLASS (diary_window_parent_class)->finalize (self);
+}
+
+static void
 diary_window_class_init (DiaryWindowClass *klass)
 {
+  GObjectClass *obj_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+
+  obj_class->finalize = diary_window_finalize;
+
   gtk_widget_class_set_template_from_resource (widget_class, "/com/bjareholt/johan/simple-diary/ui/window.ui");
   gtk_widget_class_bind_template_child (widget_class, DiaryWindow, content_stack);
   gtk_widget_class_bind_template_child (widget_class, DiaryWindow, new_button);
@@ -104,8 +118,19 @@ diary_window_push_view (DiaryWindow *self, GtkWidget *new_view)
 void
 diary_window_pop_view(DiaryWindow *self)
 {
-  GtkWidget *current_view = g_list_pop (&self->view_stack);
-  GtkWidget *prev_view = GTK_WIDGET (g_list_last (self->view_stack)->data);
+  GtkWidget *current_view;
+  GtkWidget *prev_view;
+  GList *prev_view_list;
+
+  current_view = g_list_pop (&self->view_stack);
+  if (current_view == NULL) {
+      return;
+  }
+  prev_view_list = g_list_last (self->view_stack);
+  if (prev_view_list == NULL) {
+      return;
+  }
+  prev_view = GTK_WIDGET (g_list_last (self->view_stack)->data);
 
   diary_window_update_header_buttons (self, prev_view, current_view);
 

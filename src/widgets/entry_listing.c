@@ -44,6 +44,7 @@ entry_listing_update_title (EntryListing *self)
 
   g_object_get (self->entry, "basename", &title, NULL);
   gtk_label_set_label(self->name_label, title);
+  g_free (title);
 }
 
 void

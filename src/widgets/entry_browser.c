@@ -112,9 +112,12 @@ on_new_pressed (GtkWidget *widget)
   GtkWidget *entry_view;
   GtkWidget *entry_edit;
   Entry *entry;
+  GDateTime *now;
+  gchar *filename;
 
-  GDateTime *now = g_date_time_new_now_local ();
-  gchar *filename = g_date_time_format (now, "%Y-%m-%d - %A.md");
+  now = g_date_time_new_now_local ();
+  filename = g_date_time_format (now, "%Y-%m-%d - %A.md");
+  g_free (now);
 
   entry_listing_row = entry_list_find (self->entry_list, filename);
   if (entry_listing_row != NULL) {
@@ -132,6 +135,8 @@ on_new_pressed (GtkWidget *widget)
   g_signal_connect (entry_view, "deleted", G_CALLBACK (entry_view_deleted_cb), self);
   entry_list_focus (self->entry_list, entry_listing_row);
   diary_window_push_view (diary_window, entry_edit);
+
+  g_free (filename);
 }
 
 static void
@@ -157,8 +162,6 @@ G_DEFINE_TYPE_WITH_CODE (EntryBrowser, entry_browser, GTK_TYPE_BOX,
 static void
 entry_selected_changed_cb (EntryList *list, Entry *entry, EntryBrowser *browser)
 {
-  g_print ("list: %p\n", list);
-  g_print ("entry: %p\n", entry);
   if (entry == NULL) {
     entry_browser_set_content (browser, NULL);
   } else {
