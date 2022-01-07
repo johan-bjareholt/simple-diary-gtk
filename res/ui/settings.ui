@@ -27,6 +27,22 @@
             </child>
           </object>
         </child>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="title" translatable="yes">Application</property>
+            <child>
+              <object class="AdwActionRow" id="about_button">
+                <property name="title" translatable="yes">About</property>
+                <property name="activatable">TRUE</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="icon-name">go-next-symbolic</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
       </object>
     </child>
   </template>

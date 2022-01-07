@@ -32,12 +32,6 @@
             <property name="icon-name">preferences-system-symbolic</property>
           </object>
         </child>
-        <child type="end">
-          <object class="GtkButton" id="about_button">
-            <property name="receives-default">1</property>
-            <property name="icon-name">help-about-symbolic</property>
-          </object>
-        </child>
       </object>
     </child>
   </template>
