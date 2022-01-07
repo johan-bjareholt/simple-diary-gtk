@@ -19,7 +19,9 @@
                 <property name="title" translatable="yes">Dark Mode</property>
                 <property name="icon-name" translatable="yes">night-light-symbolic</property>
                 <child>
-                  <object class="GtkSwitch" id="dark_mode_toggle"/>
+                  <object class="GtkSwitch" id="dark_mode_toggle">
+                    <property name="valign">center</property>
+                  </object>
                 </child>
               </object>
             </child>
