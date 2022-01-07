@@ -6,6 +6,7 @@
 #include "entry_listing.h"
 #include "entry_edit.h"
 #include "entry_view.h"
+#include "entry_name_dialog.h"
 #include "entry.h"
 #include "window.h"
 
@@ -103,40 +104,79 @@ entry_view_deleted_cb (EntryView *entry_view, Entry *entry, gpointer user_data)
 }
 
 static void
+name_finished (GtkDialog *dialog, int response_id, gpointer user_data)
+{
+  EntryNameDialog *name_dialog = DIARY_ENTRY_NAME_DIALOG (dialog);
+  EntryBrowser *self = DIARY_ENTRY_BROWSER (user_data);
+
+  if (response_id == GTK_RESPONSE_OK) {
+    gchar *text;
+    gchar *filename;
+    DiaryWindow *diary_window;
+    GtkListBoxRow *entry_listing_row;
+    EntryListing *entry_listing;
+    GtkWidget *entry_view;
+    GtkWidget *entry_edit;
+    Entry *entry;
+
+    diary_window = diary_window_get_instance ();
+
+    text = entry_name_dialog_get_name (name_dialog);
+    // TODO: check if name contains dots or slashes
+    filename = g_strdup_printf ("%s.md", text);
+
+    entry_listing_row = entry_list_find (self->entry_list, filename);
+    if (entry_listing_row != NULL) {
+      g_free (filename);
+      entry_listing = DIARY_ENTRY_LISTING (gtk_list_box_row_get_child (entry_listing_row));
+      entry = entry_listing_get_entry (entry_listing);
+    } else {
+      entry = entry_new (filename);
+      entry_list_add_entry (self->entry_list, entry);
+      entry_listing_row = entry_list_find (self->entry_list, filename);
+    }
+
+    entry_edit = entry_edit_new (entry);
+    entry_view = entry_view_new (entry);
+    g_signal_connect (entry_view, "deleted", G_CALLBACK (entry_view_deleted_cb), self);
+    entry_list_focus (self->entry_list, entry_listing_row);
+    diary_window_push_view (diary_window, entry_edit);
+
+    g_free (text);
+    g_free (filename);
+  }
+
+  gtk_window_destroy (GTK_WINDOW (dialog));
+}
+
+static void
 on_new_pressed (GtkWidget *widget)
 {
   EntryBrowser *self = DIARY_ENTRY_BROWSER (widget);
-  DiaryWindow *diary_window = diary_window_get_instance ();
-  GtkListBoxRow *entry_listing_row;
-  EntryListing *entry_listing;
-  GtkWidget *entry_view;
-  GtkWidget *entry_edit;
-  Entry *entry;
+  GtkWindow *window;
+  GtkWidget *dialog;
   GDateTime *now;
-  gchar *filename;
+  gchar *default_name;
 
   now = g_date_time_new_now_local ();
-  filename = g_date_time_format (now, "%Y-%m-%d - %A.md");
-  g_free (now);
 
-  entry_listing_row = entry_list_find (self->entry_list, filename);
-  if (entry_listing_row != NULL) {
-    g_free (filename);
-    entry_listing = DIARY_ENTRY_LISTING (gtk_list_box_row_get_child (entry_listing_row));
-    entry = entry_listing_get_entry (entry_listing);
-  } else {
-    entry = entry_new (filename);
-    entry_list_add_entry (self->entry_list, entry);
-    entry_listing_row = entry_list_find (self->entry_list, filename);
-  }
 
-  entry_edit = entry_edit_new (entry);
-  entry_view = entry_view_new (entry);
-  g_signal_connect (entry_view, "deleted", G_CALLBACK (entry_view_deleted_cb), self);
-  entry_list_focus (self->entry_list, entry_listing_row);
-  diary_window_push_view (diary_window, entry_edit);
+  window = GTK_WINDOW (diary_window_get_instance ());
 
-  g_free (filename);
+  default_name = g_date_time_format (now, "%Y-%m-%d - %A");
+  dialog = entry_name_dialog_new (default_name);
+
+  g_signal_connect (dialog,
+                    "response",
+                    G_CALLBACK (name_finished),
+                    self);
+
+  gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
+
+  gtk_widget_show (dialog);
+
+  g_free (default_name);
+  g_date_time_unref (now);
 }
 
 static void
