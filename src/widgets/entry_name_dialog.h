@@ -14,7 +14,7 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (EntryNameDialog, entry_name_dialog, DIARY, ENTRY_NAME_DIALOG, GtkDialog)
 
 GtkWidget *
-entry_name_dialog_new (const gchar * basename);
+entry_name_dialog_new (void);
 
 gchar *
 entry_name_dialog_get_name (EntryNameDialog * name_dialog);

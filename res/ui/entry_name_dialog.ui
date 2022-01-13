@@ -6,25 +6,55 @@
     <property name="modal">True</property>
     <child internal-child="content_area">
       <object class="GtkBox">
-        <property name="orientation">vertical</property>
+        <property name="orientation">horizontal</property>
+        <style>
+          <class name="linked"/>
+        </style>
+        <property name="margin-start">10</property>
+        <property name="margin-end">10</property>
+        <property name="margin-top">10</property>
+        <property name="margin-bottom">10</property>
         <child>
-          <object class="GtkLabel">
-            <property name="margin-start">10</property>
-            <property name="margin-end">10</property>
-            <property name="margin-top">10</property>
-            <property name="margin-bottom">10</property>
-            <property name="label" translatable="yes">What should be the name of the entry?</property>
+          <object class="GtkButton" id="date_button">
+            <property name="hexpand">FALSE</property>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">horizontal</property>
+                <child>
+                  <object class="GtkLabel" id="date_label">
+                    <property name="label">2022-01-01</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkImage">
+                    <property name="margin-start">5</property>
+                    <property name="icon-name">pan-down-symbolic</property>
+                    <child>
+                      <object class="GtkPopover" id="date_popover">
+                        <property name="autohide">TRUE</property>
+                        <child>
+                          <object class="GtkCalendar" id="date_calendar">
+                            <property name="margin-start">10</property>
+                            <property name="margin-end">10</property>
+                            <property name="margin-top">10</property>
+                            <property name="margin-bottom">10</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
         <child>
           <object class="GtkEntry" id="name_entry">
-            <property name="margin-start">10</property>
-            <property name="margin-end">10</property>
-            <property name="margin-bottom">10</property>
             <property name="hexpand">TRUE</property>
             <property name="editable">TRUE</property>
           </object>
         </child>
+
       </object>
     </child>
 

@@ -155,28 +155,17 @@ on_new_pressed (GtkWidget *widget)
   EntryBrowser *self = DIARY_ENTRY_BROWSER (widget);
   GtkWindow *window;
   GtkWidget *dialog;
-  GDateTime *now;
-  gchar *default_name;
-
-  now = g_date_time_new_now_local ();
-
 
   window = GTK_WINDOW (diary_window_get_instance ());
 
-  default_name = g_date_time_format (now, "%Y-%m-%d - %A");
-  dialog = entry_name_dialog_new (default_name);
-
+  dialog = entry_name_dialog_new ();
   g_signal_connect (dialog,
                     "response",
                     G_CALLBACK (name_finished),
                     self);
-
   gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
 
   gtk_widget_show (dialog);
-
-  g_free (default_name);
-  g_date_time_unref (now);
 }
 
 static void
