@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <adwaita.h>
 #include <glib/gprintf.h>
 #include <errno.h>
 
@@ -78,14 +79,31 @@ utils_get_file_extension (gchar *filepath)
   return strrchr (filepath, '.');
 }
 
+static AdwColorScheme default_color_scheme = -1;
+
 void
 utils_apply_dark_mode (void)
 {
-  GtkSettings *settings;
-  gboolean dark_mode_enabled;
+  AdwApplication *app;
+  AdwStyleManager *style_mgr;
+  AdwColorScheme color_scheme;
+  gboolean local_darkmode;
 
-  settings = gtk_settings_get_default ();
-  dark_mode_enabled = settings_get_dark_mode ();
+  local_darkmode = settings_get_dark_mode ();
 
-  g_object_set (settings, "gtk-application-prefer-dark-theme", dark_mode_enabled, NULL);
+  app = ADW_APPLICATION (g_application_get_default ());
+  style_mgr = adw_application_get_style_manager (app);
+  color_scheme = adw_style_manager_get_color_scheme (style_mgr);
+
+  if (default_color_scheme == -1) {
+    default_color_scheme = color_scheme;
+  }
+
+  if (local_darkmode) {
+    g_object_set (style_mgr, "color-scheme", ADW_COLOR_SCHEME_PREFER_DARK, NULL);
+    g_print ("locally set darkmode\n");
+  } else {
+    g_object_set (style_mgr, "color-scheme", default_color_scheme, NULL);
+    g_print ("applying default color scheme\n");
+  }
 }
