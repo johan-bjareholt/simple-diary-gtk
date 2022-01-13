@@ -49,3 +49,5 @@ install_data(
   appstream_file,
   install_dir: get_option('datadir') / 'metainfo',
 )
+
+subdir('icons')
