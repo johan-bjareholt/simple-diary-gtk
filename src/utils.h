@@ -10,4 +10,4 @@ gchar *utils_get_photos_folder (gchar *basename, gboolean absolute);
 
 gchar *utils_get_file_extension (gchar *filepath);
 
-void utils_apply_dark_mode (void);
+void utils_apply_color_scheme (void);

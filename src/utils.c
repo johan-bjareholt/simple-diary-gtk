@@ -79,31 +79,27 @@ utils_get_file_extension (gchar *filepath)
   return strrchr (filepath, '.');
 }
 
-static AdwColorScheme default_color_scheme = -1;
-
 void
-utils_apply_dark_mode (void)
+utils_apply_color_scheme (void)
 {
   AdwApplication *app;
   AdwStyleManager *style_mgr;
-  AdwColorScheme color_scheme;
-  gboolean local_darkmode;
+  ColorScheme color_scheme;
 
-  local_darkmode = settings_get_dark_mode ();
+  color_scheme = settings_get_color_scheme ();
 
   app = ADW_APPLICATION (g_application_get_default ());
   style_mgr = adw_application_get_style_manager (app);
-  color_scheme = adw_style_manager_get_color_scheme (style_mgr);
 
-  if (default_color_scheme == -1) {
-    default_color_scheme = color_scheme;
-  }
-
-  if (local_darkmode) {
-    g_object_set (style_mgr, "color-scheme", ADW_COLOR_SCHEME_PREFER_DARK, NULL);
-    g_print ("locally set darkmode\n");
-  } else {
-    g_object_set (style_mgr, "color-scheme", default_color_scheme, NULL);
-    g_print ("applying default color scheme\n");
+  switch (color_scheme) {
+    case COLOR_SCHEME_LIGHT:
+      g_object_set (style_mgr, "color-scheme", ADW_COLOR_SCHEME_PREFER_LIGHT, NULL);
+      break;
+    case COLOR_SCHEME_DEFAULT:
+      g_object_set (style_mgr, "color-scheme", ADW_COLOR_SCHEME_DEFAULT, NULL);
+      break;
+    case COLOR_SCHEME_DARK:
+      g_object_set (style_mgr, "color-scheme", ADW_COLOR_SCHEME_PREFER_DARK, NULL);
+      break;
   }
 }

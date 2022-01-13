@@ -9,7 +9,9 @@ struct _SettingsView
   GtkBox parent_instance;
 
   /* widgets */
-  GtkSwitch *dark_mode_toggle;
+  GtkToggleButton *color_scheme_light;
+  GtkToggleButton *color_scheme_default;
+  GtkToggleButton *color_scheme_dark;
   GtkListBoxRow *about_button;
 
   /* properties */
@@ -19,10 +21,16 @@ struct _SettingsView
 G_DEFINE_TYPE (SettingsView, settings_view, GTK_TYPE_BOX);
 
 static gboolean
-dark_mode_toggle_clicked(GtkButton *button, gboolean enabled, gpointer user_data)
+color_scheme_button_toggled (GtkButton *button, gpointer user_data)
 {
-  settings_set_dark_mode (enabled);
-  utils_apply_dark_mode ();
+  gboolean active;
+  ColorScheme color_scheme = (ColorScheme) user_data;
+
+  g_object_get (button, "active", &active, NULL);
+  if (active) {
+    settings_set_color_scheme (color_scheme);
+    utils_apply_color_scheme ();
+  }
   return FALSE;
 }
 
@@ -62,7 +70,11 @@ settings_view_class_init (SettingsViewClass *klass)
   gtk_widget_class_set_template_from_resource (widget_class,
       "/com/bjareholt/johan/simple-diary/ui/settings.ui");
   gtk_widget_class_bind_template_child (widget_class, SettingsView,
-      dark_mode_toggle);
+      color_scheme_light);
+  gtk_widget_class_bind_template_child (widget_class, SettingsView,
+      color_scheme_default);
+  gtk_widget_class_bind_template_child (widget_class, SettingsView,
+      color_scheme_dark);
   gtk_widget_class_bind_template_child (widget_class, SettingsView,
       about_button);
 }
@@ -70,10 +82,29 @@ settings_view_class_init (SettingsViewClass *klass)
 static void
 settings_view_init (SettingsView *self)
 {
+  ColorScheme color_scheme;
+
   gtk_widget_init_template (GTK_WIDGET (self));
-  g_object_set (self->dark_mode_toggle, "state", settings_get_dark_mode (), NULL);
-  g_signal_connect (self->dark_mode_toggle, "state-set",
-      (GCallback) dark_mode_toggle_clicked, self);
+
+  color_scheme = settings_get_color_scheme ();
+  switch (color_scheme) {
+    case COLOR_SCHEME_LIGHT:
+      g_object_set (self->color_scheme_light, "active", TRUE, NULL);
+      break;
+    case COLOR_SCHEME_DEFAULT:
+      g_object_set (self->color_scheme_default, "active", TRUE, NULL);
+      break;
+    case COLOR_SCHEME_DARK:
+      g_object_set (self->color_scheme_dark, "active", TRUE, NULL);
+      break;
+  }
+
+  g_signal_connect (self->color_scheme_light, "toggled",
+      (GCallback) color_scheme_button_toggled, (gpointer) COLOR_SCHEME_LIGHT);
+  g_signal_connect (self->color_scheme_default, "toggled",
+      (GCallback) color_scheme_button_toggled, (gpointer) COLOR_SCHEME_DEFAULT);
+  g_signal_connect (self->color_scheme_dark, "toggled",
+      (GCallback) color_scheme_button_toggled, (gpointer) COLOR_SCHEME_DARK);
   g_signal_connect (self->about_button, "activated", (GCallback) about_button_pressed, self);
 }
 

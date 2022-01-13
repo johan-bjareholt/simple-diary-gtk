@@ -1,5 +1,7 @@
 #include <glib.h>
 
+#include "settings.h"
+
 static gchar *keyfile_path = NULL;
 static GKeyFile *keyfile = NULL;
 
@@ -20,31 +22,59 @@ settings_get_diary_folder (void)
   return diary_folder;
 }
 
-gboolean
-settings_get_dark_mode (void)
+ColorScheme
+settings_get_color_scheme (void)
 {
-  gboolean ret;
-  GError *err = NULL;
+  ColorScheme color_scheme;
+  gchar *color_scheme_str;
 
   g_assert_nonnull (keyfile);
 
-  ret = g_key_file_get_boolean (keyfile, "Appearance", "DarkMode", &err);
-  if (err != NULL) {
-    g_printerr ("Settings file is corrupted: %s\n", err->message);
-    exit (EXIT_FAILURE);
+  color_scheme_str = g_key_file_get_string (keyfile, "Appearance", "ColorScheme", NULL);
+  if (color_scheme_str == NULL) {
+    g_print ("Could not find Appearance.ColorScheme, assuming default\n");
+    g_strdup ("default");
   }
 
-  return ret;
+  if (g_strcmp0 (color_scheme_str, "light") == 0) {
+    color_scheme = COLOR_SCHEME_LIGHT;
+  } else if (g_strcmp0 (color_scheme_str, "default") == 0) {
+    color_scheme = COLOR_SCHEME_DEFAULT;
+  } else if (g_strcmp0 (color_scheme_str, "dark") == 0) {
+    color_scheme = COLOR_SCHEME_DARK;
+  } else {
+    g_print ("Invalid color scheme '%s' in settings, assuming default\n",
+        color_scheme_str);
+    color_scheme = COLOR_SCHEME_DEFAULT;
+  }
+
+  return color_scheme;
 }
 
 void
-settings_set_dark_mode (gboolean enabled)
+settings_set_color_scheme (ColorScheme color_scheme)
 {
   GError *err = NULL;
+  gchar *color_scheme_str;
 
   g_assert_nonnull (keyfile);
 
-  g_key_file_set_boolean (keyfile, "Appearance", "DarkMode", enabled);
+  switch (color_scheme) {
+    case COLOR_SCHEME_LIGHT:
+      color_scheme_str = "light";
+      break;
+    case COLOR_SCHEME_DEFAULT:
+      color_scheme_str = "default";
+      break;
+    case COLOR_SCHEME_DARK:
+      color_scheme_str = "dark";
+      break;
+  }
+
+  g_print ("Saving color scheme preference: %s\n", color_scheme_str);
+
+  g_key_file_set_string (keyfile, "Appearance", "ColorScheme",
+      color_scheme_str);
 
   if (!g_key_file_save_to_file (keyfile, keyfile_path, &err)) {
     g_warning ("Error saving settings file: %s", err->message);

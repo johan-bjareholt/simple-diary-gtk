@@ -23,7 +23,7 @@ init(GtkApplication *app)
   }
   g_free (diary_path);
 
-  utils_apply_dark_mode ();
+  utils_apply_color_scheme ();
 
   window = diary_window_new (app);
   gtk_widget_show(GTK_WIDGET (window));
