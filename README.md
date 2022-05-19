@@ -7,7 +7,18 @@ Simple and lightweight diary app.
   <img src="https://flathub.org/assets/badges/flathub-badge-en.svg" alt="Get it on flathub" width="20%">
 </a>
 
+Archlinux / Manjaro
 
+<p>
+  <a href="https://aur.archlinux.org/packages/simple-diary-gtk">
+  simple-diary-gtk
+</a>
+</p>
+<p>
+<a href="https://aur.archlinux.org/packages/simple-diary-gtk-git">
+  simple-diary-gtk-git
+</a>
+</p>
 ### Features
 - Saves entries in standard markdown
 - Adding images to your entries
