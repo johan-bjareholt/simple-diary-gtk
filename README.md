@@ -3,22 +3,26 @@ Simple Diary
 
 Simple and lightweight diary app.
 
-<a href="https://flathub.org/apps/details/com.bjareholt.johan.SimpleDiary">
-  <img src="https://flathub.org/assets/badges/flathub-badge-en.svg" alt="Get it on flathub" width="20%">
-</a>
+### Installation
 
-Archlinux / Manjaro
+<table>
+  <tr>
+    <td>Flathub</td>
+    <td>
+      <a href="https://flathub.org/apps/details/com.bjareholt.johan.SimpleDiary">
+        <img src="https://flathub.org/assets/badges/flathub-badge-en.svg" alt="Get it on flathub" width="20%">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td>Archlinux AUR</td>
+    <td>
+        <a href="https://aur.archlinux.org/packages/simple-diary-gtk">simple-diary-gtk</a>,
+        <a href="https://aur.archlinux.org/packages/simple-diary-gtk-git">simple-diary-gtk-git</a>
+    </td>
+  </tr>
+</table>
 
-<p>
-  <a href="https://aur.archlinux.org/packages/simple-diary-gtk">
-  simple-diary-gtk
-</a>
-</p>
-<p>
-<a href="https://aur.archlinux.org/packages/simple-diary-gtk-git">
-  simple-diary-gtk-git
-</a>
-</p>
 ### Features
 - Saves entries in standard markdown
 - Adding images to your entries
