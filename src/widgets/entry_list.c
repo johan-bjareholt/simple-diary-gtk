@@ -5,7 +5,6 @@
 
 struct _EntryList
 {
-  /* TODO GTK4: GtkScrolledWindow */
   GtkWindow parent_instance;
 
   GtkListBox *entry_list_box;
@@ -121,7 +120,6 @@ generate_entry_list (EntryList *self, const gchar *dir_path, GPtrArray *files)
 {
   const gchar *filename;
 
-  self->entry_list_box = GTK_LIST_BOX (gtk_list_box_new ());
   gtk_list_box_set_selection_mode (self->entry_list_box, GTK_SELECTION_NONE);
 
   g_signal_connect (self->entry_list_box, "row-activated", G_CALLBACK (entry_pressed_cb), NULL);
@@ -144,8 +142,7 @@ load_entry_list (EntryList *self)
 
   dir_path = utils_get_diary_folder ();
   files = list_entries (dir_path);
-  self->entry_list_box = generate_entry_list (self, dir_path, files);
-  gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (self), GTK_WIDGET (self->entry_list_box));
+  generate_entry_list (self, dir_path, files);
 
   g_free (dir_path);
   g_ptr_array_unref (files);
@@ -154,6 +151,11 @@ load_entry_list (EntryList *self)
 static void
 entry_list_class_init (EntryListClass *klass)
 {
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+
+  gtk_widget_class_set_template_from_resource (widget_class, "/com/bjareholt/johan/simple-diary/ui/entry_list.ui");
+  gtk_widget_class_bind_template_child (widget_class, EntryList, entry_list_box);
+
   entry_list_signals [SIGNAL_SELECTION_CHANGED] =
       g_signal_new ("selection-changed", G_TYPE_FROM_CLASS (klass),
       0, 0, NULL, NULL, NULL, G_TYPE_NONE, 1, DIARY_TYPE_ENTRY);
@@ -217,7 +219,8 @@ entry_list_unfocus (EntryList *self)
 static void
 entry_list_init (EntryList *self)
 {
-  self->entry_list_box = NULL;
+  gtk_widget_init_template (GTK_WIDGET (self));
+
   load_entry_list (self);
 
   gtk_list_box_set_sort_func (self->entry_list_box, list_box_sort, NULL, NULL);
