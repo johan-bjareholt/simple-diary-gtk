@@ -21,6 +21,14 @@
           </object>
         </child>
         <child>
+          <object class="AdwLeafletPage">
+            <property name="navigatable">False</property>
+            <property name="child">
+              <object class="GtkSeparator"/>
+            </property>
+          </object>
+        </child>
+        <child>
           <object class="GtkBox" id="content_box">
             <property name="width-request">350</property>
             <property name="can-focus">0</property>

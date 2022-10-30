@@ -11,6 +11,10 @@
         <property name="hscrollbar-policy">GTK_POLICY_NEVER</property>
         <child>
           <object class="GtkViewport" id="md_viewport">
+              <property name="margin-top">10</property>
+              <property name="margin-bottom">10</property>
+              <property name="margin-start">10</property>
+              <property name="margin-end">10</property>
               <property name="vscroll-policy">GTK_SCROLL_NATURAL</property>
           </object>
         </child>
