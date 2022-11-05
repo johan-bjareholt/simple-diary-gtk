@@ -127,7 +127,7 @@ generate_entry_list (EntryList *self, const gchar *dir_path, GPtrArray *files)
 
   for (int i=0; i < files->len; i++) {
     filename = g_ptr_array_index (files, i);
-    Entry *entry = entry_open (dir_path, filename);
+    Entry *entry = entry_new (dir_path, filename);
     entry_list_add_entry (self, entry);
   }
 

@@ -351,19 +351,10 @@ entry_init (Entry *self)
 }
 
 Entry *
-entry_open (const gchar *folder, const gchar *filename)
+entry_new (const gchar *folder, const gchar *filename)
 {
-  return g_object_new (DIARY_TYPE_ENTRY,
-                       "folder", folder,
-                       "filename", filename,
-                       NULL);
-}
-
-Entry *
-entry_new (const gchar *filename)
-{
-    gchar *folder = utils_get_diary_folder ();
-    Entry *entry = DIARY_ENTRY (entry_open (folder, filename));
-    g_free (folder);
-    return entry;
+    return g_object_new (DIARY_TYPE_ENTRY,
+                         "folder", folder,
+                         "filename", filename,
+                         NULL);
 }

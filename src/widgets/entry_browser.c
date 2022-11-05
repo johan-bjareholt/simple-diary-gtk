@@ -131,7 +131,9 @@ name_finished (GtkDialog *dialog, int response_id, gpointer user_data)
       entry_listing = DIARY_ENTRY_LISTING (gtk_list_box_row_get_child (entry_listing_row));
       entry = entry_listing_get_entry (entry_listing);
     } else {
-      entry = entry_new (filename);
+      gchar *folder = utils_get_diary_folder ();
+      entry = entry_new (folder, filename);
+      g_free (folder);
       entry_list_add_entry (self->entry_list, entry);
       entry_listing_row = entry_list_find (self->entry_list, filename);
     }
