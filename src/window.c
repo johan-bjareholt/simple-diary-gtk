@@ -35,13 +35,15 @@ diary_window_get_instance (void)
 }
 
 static void
-diary_window_finalize (DiaryWindow *self)
+diary_window_finalize (GObject *obj)
 {
+  DiaryWindow *self = DIARY_WINDOW(obj);
+
   while (self->view_stack != NULL) {
       diary_window_pop_view (self);
   }
 
-  G_OBJECT_CLASS (diary_window_parent_class)->finalize (self);
+  G_OBJECT_CLASS (diary_window_parent_class)->finalize (obj);
 }
 
 static void
