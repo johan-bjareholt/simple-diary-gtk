@@ -4,7 +4,7 @@
 
 void utils_error_dialog (gchar *message, ...);
 
-gchar *utils_get_diary_folder ();
+gchar *utils_get_diary_folder (void);
 
 gchar *utils_get_photos_folder (gchar *basename, gboolean absolute);
 

@@ -37,7 +37,7 @@ utils_error_dialog(gchar *format, ...)
 }
 
 gchar *
-utils_get_diary_folder ()
+utils_get_diary_folder (void)
 {
   return settings_get_diary_folder ();
 }

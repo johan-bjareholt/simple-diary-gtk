@@ -9,6 +9,7 @@
 #include "entry_name_dialog.h"
 #include "entry.h"
 #include "window.h"
+#include "utils.h"
 
 struct _EntryBrowser
 {
