@@ -98,19 +98,17 @@ migrate_datadir(void)
 
   if (!g_file_test(new_str, G_FILE_TEST_EXISTS) &&
       g_file_test(old_str, G_FILE_TEST_EXISTS)) {
-    g_autoptr(GFile) old = NULL;
-    g_autoptr(GFile) new = NULL;
+    int ret;
+    g_autofree gchar *cmd = NULL;
     g_autofree gchar *old_config_dir = NULL;
     g_autofree gchar *old_config = NULL;
-    GError *err = NULL;
-
-    old = g_file_new_for_path(old_str);
-    new = g_file_new_for_path(new_str);
 
     g_print("Migrating data from %s to %s\n", old_str, new_str);
-    if (!g_file_move (old, new, G_FILE_COPY_NONE, NULL, NULL, NULL, &err)) {
-        g_printerr("Failed to migrate datadir: %s\n", err->message);
-        g_clear_error(&err);
+    cmd = g_strdup_printf("mv %s %s", old_str, new_str);
+    errno = 0;
+    ret = system(cmd);
+    if (ret != 0) {
+        g_printerr("Failed to migrate datadir: %s\n", strerror(errno));
         exit(1);
     }
 
