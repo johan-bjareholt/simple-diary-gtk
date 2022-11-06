@@ -1,9 +1,127 @@
 #include <glib.h>
+#include <gio/gio.h>
+#include <glib/gstdio.h>
+
 
 #include "settings.h"
 
 static gchar *keyfile_path = NULL;
 static GKeyFile *keyfile = NULL;
+
+/* config home paths */
+
+static gchar *
+xdg_config_dir(void)
+{
+  gchar *dir = NULL;
+  const char *xdg_config_home = getenv("XDG_CONFIG_HOME");
+  if (xdg_config_home) {
+    dir = g_strdup_printf ("%s/simple-diary", xdg_config_home);
+  }
+  return dir;
+}
+
+static gchar *
+home_config_dir(void)
+{
+  const char *home = getenv("HOME");
+  return g_strdup_printf ("%s/.config/simple-diary", home);
+}
+
+static gchar *
+config_dir(void)
+{
+  gchar *dir = NULL;
+
+  dir = xdg_config_dir();
+  if (dir == NULL) {
+    dir = home_config_dir();
+  }
+
+  return dir;
+}
+
+/* data dir paths */
+
+static gchar *
+xdg_data_dir(void)
+{
+  gchar *dir = NULL;
+  const char *xdg_config_home = getenv("XDG_DATA_HOME");
+  if (xdg_config_home) {
+    dir = g_strdup_printf ("%s/SimpleDiary", xdg_config_home);
+  }
+  return dir;
+}
+
+static gchar *
+home_data_dir(void)
+{
+  const char *home = getenv("HOME");
+  return g_strdup_printf ("%s/Documents/SimpleDiary", home);
+}
+
+static gchar *
+default_data_dir(void)
+{
+  gchar *dir = NULL;
+
+  dir = xdg_data_dir();
+  if (dir == NULL) {
+    dir = home_data_dir();
+  }
+
+  return dir;
+}
+
+/* migrations */
+
+/* This migration is made because:
+ * When the flatpak was first made, it wrote the config to ~/.config and the
+ * data to ~/Documents. This required extra permissions in the flatpak.
+ * The migration will move the data to its respective XDG dirs, so it's reading
+ * and writing in a folder which fits the flatpak security model.
+ * Once this migration has existed for a year or more, I think we should remove
+ * it altogether and then remove the permission in the flatpak to write in the
+ * users home folder.
+ *
+ * TODO: This code was written 2022-11-06, so at least a year after this date
+ * we should consider fixing this */
+static void
+migrate_datadir(void)
+{
+  g_autofree gchar *new_str = NULL;
+  g_autofree gchar *old_str = NULL;
+
+  new_str = default_data_dir();
+  old_str = home_data_dir();
+
+  if (!g_file_test(new_str, G_FILE_TEST_EXISTS) &&
+      g_file_test(old_str, G_FILE_TEST_EXISTS)) {
+    g_autoptr(GFile) old = NULL;
+    g_autoptr(GFile) new = NULL;
+    g_autofree gchar *old_config_dir = NULL;
+    g_autofree gchar *old_config = NULL;
+    GError *err = NULL;
+
+    old = g_file_new_for_path(old_str);
+    new = g_file_new_for_path(new_str);
+
+    g_print("Migrating data from %s to %s\n", old_str, new_str);
+    if (!g_file_move (old, new, G_FILE_COPY_NONE, NULL, NULL, NULL, &err)) {
+        g_printerr("Failed to migrate datadir: %s\n", err->message);
+        g_clear_error(&err);
+        exit(1);
+    }
+
+    old_config_dir = home_config_dir();
+    old_config = g_strdup_printf("%s/settings.ini", old_config_dir);
+
+    g_unlink(old_config);
+  }
+}
+
+/* ... */
 
 gchar *
 settings_get_diary_folder (void)
@@ -87,7 +205,6 @@ static gboolean
 settings_load_default_config (void)
 {
   gboolean write = FALSE;
-  char *home = getenv("HOME");
   GError *err = NULL;
 
   // Notebooks.Default
@@ -95,10 +212,9 @@ settings_load_default_config (void)
   if (err != NULL) {
     if (g_error_matches (err, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_KEY_NOT_FOUND) ||
         g_error_matches (err, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_GROUP_NOT_FOUND)) {
-      gchar * diary_folder = g_strdup_printf("%s/Documents/SimpleDiary", home);
+      g_autofree gchar *diary_folder = default_data_dir();
       g_key_file_set_string (keyfile, "Notebooks", "Default", diary_folder);
       write = TRUE;
-      g_free (diary_folder);
     } else {
       g_printerr ("Settings file is corrupted: %s\n", err->message);
       exit (EXIT_FAILURE);
@@ -126,13 +242,14 @@ settings_load_default_config (void)
 void
 settings_init (void)
 {
-  gchar *config_folder;
-  char *home = getenv("HOME");
+  g_autofree gchar *config_folder = NULL;
   GError *err = NULL;
 
   g_assert_null (keyfile);
 
-  config_folder = g_strdup_printf ("%s/.config/simple-diary", home);
+  migrate_datadir();
+
+  config_folder = config_dir();
   if (g_mkdir_with_parents (config_folder, 0750) < 0) {
     g_printerr ("Failed to create config folder: %s\n", err->message);
     exit (EXIT_FAILURE);
@@ -140,8 +257,6 @@ settings_init (void)
 
   keyfile = g_key_file_new ();
   keyfile_path = g_strdup_printf ("%s/settings.ini", config_folder);
-
-  g_free (config_folder);
 
   if (!g_key_file_load_from_file (keyfile, keyfile_path, 0, &err)) {
     if (g_error_matches (err, G_FILE_ERROR, G_FILE_ERROR_NOENT)) {
