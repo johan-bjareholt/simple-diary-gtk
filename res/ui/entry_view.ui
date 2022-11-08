@@ -6,62 +6,72 @@
     <property name="can-focus">0</property>
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkScrolledWindow">
-        <property name="vexpand">True</property>
-        <property name="hexpand">False</property>
-        <property name="hscrollbar-policy">GTK_POLICY_NEVER</property>
+      <object class="GtkOverlay">
         <child>
-          <object class="GtkViewport" id="md_viewport">
-              <property name="margin-top">10</property>
-              <property name="margin-bottom">10</property>
-              <property name="margin-start">10</property>
-              <property name="margin-end">10</property>
-              <property name="vscroll-policy">GTK_SCROLL_NATURAL</property>
-          </object>
-        </child>
-      </object>
-    </child>
-    <child>
-      <object class="GtkBox">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="hexpand">True</property>
-        <property name="halign">GTK_ALIGN_CENTER</property>
-        <style>
-          <class name="linked"/>
-        </style>
-
-        <child>
-          <object class="GtkButton" id="edit_button">
+          <object class="GtkScrolledWindow">
+            <property name="hexpand">False</property>
+            <property name="hscrollbar-policy">GTK_POLICY_NEVER</property>
+            <property name="vexpand">True</property>
             <child>
-              <object class="AdwButtonContent">
-                <property name="label"> Edit</property>
-                <property name="icon-name">document-edit</property>
-                <property name="use-underline">True</property>
+              <object class="GtkViewport" id="md_viewport">
+                <property name="margin-bottom">10</property>
+                <property name="margin-end">10</property>
+                <property name="margin-start">10</property>
+                <property name="margin-top">10</property>
+                <property name="vscroll-policy">GTK_SCROLL_NATURAL</property>
+                <child>
+                  <object class="GtkBox"/>
+                </child>
               </object>
             </child>
           </object>
         </child>
-        <child>
-          <object class="GtkButton" id="rename_button">
+        <child type="overlay">
+          <object class="GtkBox">
+            <property name="can-focus">False</property>
+            <property name="css-classes">toolbar
+card</property>
+            <property name="halign">center</property>
+            <property name="hexpand">True</property>
+            <property name="margin-bottom">15</property>
+            <property name="valign">end</property>
+            <property name="visible">True</property>
             <child>
-              <object class="AdwButtonContent">
-                <property name="label"> Rename</property>
-                <property name="icon-name">format-text-bold-symbolic</property>
-                <property name="use-underline">True</property>
+              <object class="GtkButton" id="edit_button">
+                <child>
+                  <object class="AdwButtonContent">
+                    <property name="icon-name">document-edit-symbolic</property>
+                    <property name="label"> Edit</property>
+                    <property name="use-underline">True</property>
+                  </object>
+                </child>
               </object>
             </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkButton" id="delete_button">
             <child>
-              <object class="AdwButtonContent">
-                <property name="label"> Delete</property>
-                <property name="icon-name">edit-delete-symbolic</property>
-                <property name="use-underline">True</property>
+              <object class="GtkButton" id="rename_button">
+                <child>
+                  <object class="AdwButtonContent">
+                    <property name="icon-name">format-text-bold-symbolic</property>
+                    <property name="label"> Rename</property>
+                    <property name="use-underline">True</property>
+                  </object>
+                </child>
               </object>
             </child>
+            <child>
+              <object class="GtkButton" id="delete_button">
+                <child>
+                  <object class="AdwButtonContent">
+                    <property name="icon-name">edit-delete-symbolic</property>
+                    <property name="label"> Delete</property>
+                    <property name="use-underline">True</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <style>
+              <class name="linked"/>
+            </style>
           </object>
         </child>
       </object>
