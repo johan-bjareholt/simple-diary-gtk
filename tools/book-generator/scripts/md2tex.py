@@ -22,17 +22,23 @@ except FileExistsError:
     print(f"folder already exists: {tex_dir}")
     exit(1)
 
+def filepath_escape(string):
+    #string = string.replace("\"", "\\\"")
+    return string
+
 def latex_escape(string):
     # Following chars have special meaning in latex:
     #   & % $ # _ { } ~ ^ \
     string = string.replace("\\", "\\\\")
-    string = string.replace("&", "\&")
+    string = string.replace("\"", "''")
+    # TODO: Also do single quotes
     string = string.replace("%", "\%")
     string = string.replace("$", "\$")
     string = string.replace("#", "\#")
     string = string.replace("_", "\_")
     string = string.replace("{", "\{")
     string = string.replace("}", "\}")
+    string = string.replace("&", "\\&")
     string = string.replace("~", "\~")
     string = string.replace("^", "\^")
     return string
@@ -62,6 +68,8 @@ class LatexRenderer(marko.renderer.Renderer):
                 return render_func(element)
         doc_str = self.render_children(element)
 
+        doc_str += "\FloatBarrier\n"
+
         if len(self.images) > 0:
             for index, img in enumerate(self.images):
                 if index % 2 == 0:
@@ -69,10 +77,10 @@ class LatexRenderer(marko.renderer.Renderer):
                 # set width and height limits for photos
                 if index == len(self.images)-1 and index % 2 == 0:
                     width = "\\textwidth"
-                    height = "9.1cm"
+                    height = "0.45\\textheight"
                 else:
                     width = "0.5\\textwidth"
-                    height = "9.1cm"
+                    height = "0.45\\textheight"
                 # create photos folder if it does not already exist
                 img_dir = os.path.dirname(img.path)
                 try:
@@ -85,13 +93,12 @@ class LatexRenderer(marko.renderer.Renderer):
                 shutil.copy2(orig_file, dest_file)
                 # append tex
                 doc_str += "  \\begin{subfigure}{" + width + "}\n"
-                doc_str += "    \\hfill\includegraphics[height=" + height + ",width=\\textwidth,keepaspectratio]{" + latex_escape(img.path) + "}\\hspace{\\fill}\n"
+                doc_str += "    \\hfill\n"
+                doc_str += "    \includegraphics[height=" + height + ",width=\\textwidth,keepaspectratio]{" + filepath_escape(img.path) + "}\\hspace{\\fill}\n"
                 doc_str += "    \subcaption{" + latex_escape(img.title) + "}\n"
                 doc_str += "  \end{subfigure}\n"
-                if index % 2 == 1:
+                if index % 2 == 1 or index == len(self.images)-1:
                     doc_str += "\end{figure}\n"
-            if (len(self.images)-1) % 1 == 0:
-                doc_str += "\end{figure}\n"
 
         return doc_str
 
@@ -197,7 +204,7 @@ class LatexRenderer(marko.renderer.Renderer):
         return self.render_raw_text(element)
 
     def render_raw_text(self, element):
-        return element.children
+        return latex_escape(element.children)
 
     def render_line_break(self, element):
         if element.soft:
@@ -215,8 +222,7 @@ def latex2md(md_path):
     tex_path = f"{tex_dir}/{title}.tex"
     with open(md_path, "r") as md_file:
         tex_str = ""
-        tex_str += "\section*{" + title + "}\n"
-        #tex_str += "\graphicspath{ {photos/" + title + "} }\n"
+        tex_str += "\section*{" + latex_escape(title) + "}\n"
         md_str = md_file.read()
         converter = marko.Markdown(renderer=LatexRenderer)
         tex_str += converter.convert(md_str)
@@ -237,19 +243,32 @@ if os.path.isdir(md_dir):
     root_str = ""
     root_str += "\documentclass[a4paper,12pt]{article}\n"
     root_str += "\n"
+    # International characters
     root_str += "\\usepackage[utf8]{inputenc}\n"
+    # Font family
+    root_str += "\\usepackage[T1]{fontenc}\n"
+    root_str += "\\usepackage{charter}\n"
+    #
     root_str += "\\usepackage{graphicx}\n"
     root_str += "\\usepackage[space]{grffile}\n"
     root_str += "\\usepackage[labelformat=empty]{caption}\n"
     root_str += "\\usepackage[labelformat=empty]{subcaption}\n"
+    # 2cm margins
     root_str += "\\usepackage{geometry}\n"
     root_str += "\\geometry{margin=2cm}\n"
+    # Allow more floats
+    root_str += "\\extrafloats{1000}\n"
+    # No newline after sections
+    root_str += "\\usepackage{newclude}\n"
+    # Float barriers
+    root_str += "\\usepackage[section]{placeins}\n"
     root_str += "\n"
     root_str += "\\begin{document}\n"
     root_str += "\n"
 
     for entry_name in sorted(entries):
-        root_str += "\\include{" + latex_escape(entry_name) + "}\n"
+        #root_str += "\\include{" + entry_name + "}\n"
+        root_str += "\\include*{" + entry_name + "}\n"
     root_str += "\n"
     root_str += "\end{document}\n"
     with open(f"{tex_dir}/diary.tex", "w") as diary_file:
