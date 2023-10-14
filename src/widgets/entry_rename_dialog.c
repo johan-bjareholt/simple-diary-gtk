@@ -38,7 +38,9 @@ static void
 dialog_text_box_activate (GtkEntry *entry, gpointer user_data)
 {
   GtkDialog *dialog = GTK_DIALOG (user_data);
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
   gtk_dialog_response (dialog, GTK_RESPONSE_OK);
+G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 static void

@@ -20,12 +20,14 @@ utils_error_dialog(gchar *format, ...)
   g_vasprintf (&message, format, args);
 
   window = GTK_WINDOW (diary_window_get_instance ());
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
   dialog =
     gtk_message_dialog_new (window,
                             GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                             GTK_MESSAGE_ERROR,
                             GTK_BUTTONS_CLOSE,
                             "%s", message);
+G_GNUC_END_IGNORE_DEPRECATIONS
   gtk_widget_set_visible (dialog, TRUE);
   gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
 

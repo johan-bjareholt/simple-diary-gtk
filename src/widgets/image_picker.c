@@ -53,7 +53,9 @@ static void
 response_ok_cb (GtkWidget *widget, gpointer user_data)
 {
   GtkDialog *self = GTK_DIALOG (user_data);
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
   gtk_dialog_response (self, GTK_RESPONSE_OK);
+G_GNUC_END_IGNORE_DEPRECATIONS
 }
 
 static void select_file (GtkWidget *button, ImagePicker *image_picker);
@@ -86,7 +88,9 @@ select_file_cb (GtkDialog *dialog, int response_id, gpointer user_data)
     GError *err = NULL;
 
     chooser = GTK_FILE_CHOOSER (dialog);
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     file = gtk_file_chooser_get_file (chooser);
+G_GNUC_END_IGNORE_DEPRECATIONS
 
     pixbuf = gdk_pixbuf_new_from_file (g_file_peek_path (file), &err);
     if (pixbuf == NULL) {
@@ -112,6 +116,7 @@ select_file (GtkWidget *button, ImagePicker *image_picker)
 {
   GtkWidget *dialog;
 
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
   dialog = gtk_file_chooser_dialog_new ("Select image file",
                                         GTK_WINDOW (image_picker),
                                         GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -120,6 +125,7 @@ select_file (GtkWidget *button, ImagePicker *image_picker)
                                         "Select",
                                         GTK_RESPONSE_ACCEPT,
                                         NULL);
+G_GNUC_END_IGNORE_DEPRECATIONS
 
   g_signal_connect (dialog, "response",
                     G_CALLBACK (select_file_cb),
