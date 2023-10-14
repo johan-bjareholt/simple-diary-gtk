@@ -64,23 +64,21 @@ edit_button_clicked (GtkButton *button, gpointer user_data)
   return FALSE;
 }
 
-static void
-rename_finished (GtkDialog *dialog, int response_id, gpointer user_data)
+void
+rename_cb (GObject *obj,
+           GAsyncResult *res,
+           gpointer user_data)
 {
-  EntryView *entry_view = DIARY_ENTRY_VIEW (user_data);
-  EntryRenameDialog *rename_dialog = DIARY_ENTRY_RENAME_DIALOG (dialog);
+    EntryRenameDialog *dialog = DIARY_ENTRY_RENAME_DIALOG (obj);
+    Entry *entry = DIARY_ENTRY (user_data);
 
-  if (response_id == GTK_RESPONSE_OK) {
-    gchar *text = entry_rename_dialog_get_name (rename_dialog);
-    // TODO: check if name contains dots or slashes
-    gchar *new_name = g_strdup_printf ("%s.md", text);
-    g_print ("Renaming entry to '%s'\n", new_name);
-    entry_rename_file (entry_view->entry, new_name);
-    g_free (text);
-    g_free (new_name);
-  }
-
-  gtk_window_destroy (GTK_WINDOW (dialog));
+    g_autofree gchar *name = entry_rename_dialog_open_finish(dialog, res);
+    if (name != NULL) {
+        // TODO: check if name contains dots or slashes
+        gchar *name_with_extension = g_strdup_printf ("%s.md", name);
+        g_print ("Renaming entry to '%s'\n", name_with_extension);
+        entry_rename_file (entry, name_with_extension);
+    }
 }
 
 static gboolean
@@ -96,14 +94,7 @@ rename_button_clicked (GtkButton *button, gpointer user_data)
 
   dialog = entry_rename_dialog_new (basename);
 
-  g_signal_connect (dialog,
-                    "response",
-                    G_CALLBACK (rename_finished),
-                    self);
-
-  gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
-
-  gtk_widget_set_visible (dialog, TRUE);
+  entry_rename_dialog_open(DIARY_ENTRY_RENAME_DIALOG (dialog), window, rename_cb, self->entry);
 
   g_free (basename);
 
