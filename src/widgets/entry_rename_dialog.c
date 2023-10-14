@@ -59,7 +59,6 @@ entry_rename_dialog_new (const gchar * basename)
     buffer = gtk_entry_buffer_new (basename, -1);
     gtk_entry_set_buffer (entry_rename_dialog->name_entry, buffer);
 
-
     return GTK_WIDGET (entry_rename_dialog);
 }
 

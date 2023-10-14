@@ -103,7 +103,7 @@ rename_button_clicked (GtkButton *button, gpointer user_data)
 
   gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
 
-  gtk_widget_show (dialog);
+  gtk_widget_set_visible (dialog, TRUE);
 
   g_free (basename);
 
@@ -154,7 +154,7 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
 
   gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
 
-  gtk_widget_show (dialog);
+  gtk_widget_set_visible (dialog, TRUE);
 
   return TRUE;
 }

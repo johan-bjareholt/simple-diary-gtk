@@ -125,7 +125,7 @@ select_file (GtkWidget *button, ImagePicker *image_picker)
                     G_CALLBACK (select_file_cb),
                     image_picker);
 
-  gtk_widget_show (dialog);
+  gtk_widget_set_visible (dialog, TRUE);
 }
 
 static void
@@ -252,5 +252,5 @@ image_picker_run (gchar *basename, void (*finished_cb)(gchar *image_name, gchar 
                     NULL);
 
   gtk_window_set_transient_for (GTK_WINDOW (image_picker), window);
-  gtk_widget_show (GTK_WIDGET (image_picker));
+  gtk_widget_set_visible (GTK_WIDGET (image_picker), TRUE);
 }

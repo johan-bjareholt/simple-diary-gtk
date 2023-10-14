@@ -57,7 +57,7 @@ static void
 date_button_clicked (GtkEntry *entry, gpointer user_data)
 {
   EntryNameDialog *dialog = DIARY_ENTRY_NAME_DIALOG (user_data);
-  gtk_widget_show (GTK_WIDGET (dialog->date_popover));
+  gtk_widget_set_visible (GTK_WIDGET (dialog->date_popover), TRUE);
 }
 
 static void

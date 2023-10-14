@@ -26,7 +26,7 @@ utils_error_dialog(gchar *format, ...)
                             GTK_MESSAGE_ERROR,
                             GTK_BUTTONS_CLOSE,
                             "%s", message);
-  gtk_widget_show (dialog);
+  gtk_widget_set_visible (dialog, TRUE);
   gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
 
 

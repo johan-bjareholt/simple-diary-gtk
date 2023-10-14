@@ -168,7 +168,7 @@ on_new_pressed (GtkWidget *widget)
                     self);
   gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
 
-  gtk_widget_show (dialog);
+  gtk_widget_set_visible (dialog, TRUE);
 }
 
 static void
