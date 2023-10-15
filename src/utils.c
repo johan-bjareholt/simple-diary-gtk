@@ -7,6 +7,16 @@
 #include "window.h"
 #include "settings.h"
 
+static void
+error_dialog_cb (AdwMessageDialog *dialog,
+                 GAsyncResult     *result,
+                 gpointer          user_data)
+{
+  GtkWindow *window;
+  window = GTK_WINDOW (diary_window_get_instance ());
+  gtk_window_destroy (window);
+}
+
 void
 utils_error_dialog(gchar *format, ...)
 {
@@ -15,27 +25,19 @@ utils_error_dialog(gchar *format, ...)
   gchar *message;
   va_list args;
 
-  /* TODO GTK4: Fix broken dialog */
   va_start (args, format);
   g_vasprintf (&message, format, args);
 
   window = GTK_WINDOW (diary_window_get_instance ());
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-  dialog =
-    gtk_message_dialog_new (window,
-                            GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-                            GTK_MESSAGE_ERROR,
-                            GTK_BUTTONS_CLOSE,
-                            "%s", message);
-G_GNUC_END_IGNORE_DEPRECATIONS
-  gtk_widget_set_visible (dialog, TRUE);
-  gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
+  dialog = adw_message_dialog_new (window, "Critical Error", message);
 
 
-  g_signal_connect_swapped (dialog,
-                            "response",
-                            G_CALLBACK (gtk_window_destroy),
-                            dialog);
+  adw_message_dialog_add_responses (ADW_MESSAGE_DIALOG (dialog),
+                                    "quit", "_Quit",
+                                    NULL);
+  adw_message_dialog_set_response_appearance (ADW_MESSAGE_DIALOG (dialog), "quit", ADW_RESPONSE_DESTRUCTIVE);
+
+  adw_message_dialog_choose (ADW_MESSAGE_DIALOG (dialog), NULL, (GAsyncReadyCallback) error_dialog_cb, NULL);
 }
 
 gchar *
