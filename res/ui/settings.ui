@@ -3,7 +3,6 @@
   <requires lib="gtk" version="4.0"/>
   <requires lib="libadwaita" version="1.1"/>
   <template class="SettingsView" parent="GtkBox">
-    <property name="can-focus">0</property>
     <property name="margin-start">10</property>
     <property name="margin-end">10</property>
     <property name="margin-top">10</property>
