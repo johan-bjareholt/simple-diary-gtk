@@ -102,50 +102,37 @@ rename_button_clicked (GtkButton *button, gpointer user_data)
 }
 
 static void
-delete_finished (GtkDialog *dialog, int response_id, gpointer user_data)
+delete_cb (GObject *obj,
+           GAsyncResult *res,
+           gpointer user_data)
 {
-  EntryView *entry_view = DIARY_ENTRY_VIEW (user_data);
-  Entry *entry = entry_view->entry;
+    EntryDeleteDialog *dialog = DIARY_ENTRY_DELETE_DIALOG (obj);
+    EntryView *entry_view = DIARY_ENTRY_VIEW (user_data);
+    Entry *entry = entry_view->entry;
 
-  switch (response_id) {
-    case GTK_RESPONSE_YES:
-      /* At this point, entry_view will get deleted, so we need to save it to a
-       * local variable and ref it before emitting deleted */
-      g_object_ref (entry);
-      g_signal_emit_by_name (entry_view, "deleted", entry_view->entry);
-      entry_delete (entry);
-      g_object_unref (entry);
-      break;
-    case GTK_RESPONSE_NO:
-    case GTK_RESPONSE_DELETE_EVENT:
-      break;
-    default:
-      g_assert_not_reached ();
-      break;
-  }
-
-  gtk_window_destroy (GTK_WINDOW (dialog));
+    gboolean delete = entry_delete_dialog_open_finish(dialog, res);
+    if (delete) {
+        /* At this point, entry_view will get deleted, so we need to save it to a
+         * local variable and ref it before emitting deleted */
+        g_object_ref (entry);
+        g_signal_emit_by_name (entry_view, "deleted", entry_view->entry);
+        entry_delete (entry);
+        g_object_unref (entry);
+    }
 }
 
 static gboolean
 delete_button_clicked (GtkButton *button, gpointer user_data)
 {
   EntryView *self = (EntryView *) user_data;
-  DiaryWindow *window;
-  GtkWidget *dialog;
+  GtkWindow *window;
+  GtkWidget *delete_dialog;
 
-  window = diary_window_get_instance ();
+  window = GTK_WINDOW (diary_window_get_instance ());
 
-  dialog = entry_delete_dialog_new ();
+  delete_dialog = entry_delete_dialog_new ();
 
-  g_signal_connect (dialog,
-                    "response",
-                    G_CALLBACK (delete_finished),
-                    self);
-
-  gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
-
-  gtk_widget_set_visible (dialog, TRUE);
+  entry_delete_dialog_open(DIARY_ENTRY_DELETE_DIALOG (delete_dialog), window, delete_cb, self);
 
   return TRUE;
 }

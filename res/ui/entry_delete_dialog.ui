@@ -1,42 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <template class="EntryDeleteDialog" parent="GtkDialog">
+  <template class="EntryDeleteDialog" parent="GtkWindow">
     <property name="resizable">0</property>
     <property name="modal">True</property>
-    <child internal-child="content_area">
+    <child>
       <object class="GtkBox">
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="margin-start">10</property>
+                <property name="margin-end">10</property>
+                <property name="margin-top">10</property>
+                <property name="margin-bottom">10</property>
+                <property name="label" translatable="yes">Are you sure you want to delete this entry?</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">horizontal</property>
             <property name="margin-start">10</property>
             <property name="margin-end">10</property>
-            <property name="margin-top">10</property>
             <property name="margin-bottom">10</property>
-            <property name="label" translatable="yes">Are you sure you want to delete this entry?</property>
+            <property name="spacing">5</property>
+            <property name="halign">end</property>
+            <child>
+              <object class="GtkButton" id="button_cancel">
+                <property name="label">Cancel</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_ok">
+                <property name="label">Delete</property>
+                <style>
+                  <class name="destructive-action"/>
+                </style>
+              </object>
+            </child>
           </object>
         </child>
       </object>
     </child>
-
-    <child type="action">
-      <object class="GtkButton" id="button_cancel">
-        <property name="label">Cancel</property>
-      </object>
-    </child>
-
-    <child type="action">
-      <object class="GtkButton" id="button_ok">
-        <property name="label">Delete</property>
-        <style>
-          <class name="destructive-action"/>
-        </style>
-      </object>
-    </child>
-
-    <action-widgets>
-      <action-widget response="no">button_cancel</action-widget>
-      <action-widget response="yes" default="true">button_ok</action-widget>
-    </action-widgets>
   </template>
 </interface>
