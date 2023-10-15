@@ -12,9 +12,7 @@ error_dialog_cb (AdwMessageDialog *dialog,
                  GAsyncResult     *result,
                  gpointer          user_data)
 {
-  GtkWindow *window;
-  window = GTK_WINDOW (diary_window_get_instance ());
-  gtk_window_destroy (window);
+  gtk_window_destroy (GTK_WINDOW (dialog));
 }
 
 void
@@ -29,13 +27,13 @@ utils_error_dialog(gchar *format, ...)
   g_vasprintf (&message, format, args);
 
   window = GTK_WINDOW (diary_window_get_instance ());
-  dialog = adw_message_dialog_new (window, "Critical Error", message);
+  dialog = adw_message_dialog_new (window, "Error", message);
 
 
   adw_message_dialog_add_responses (ADW_MESSAGE_DIALOG (dialog),
-                                    "quit", "_Quit",
+                                    "close", "_Close",
                                     NULL);
-  adw_message_dialog_set_response_appearance (ADW_MESSAGE_DIALOG (dialog), "quit", ADW_RESPONSE_DESTRUCTIVE);
+  adw_message_dialog_set_response_appearance (ADW_MESSAGE_DIALOG (dialog), "close", ADW_RESPONSE_DESTRUCTIVE);
 
   adw_message_dialog_choose (ADW_MESSAGE_DIALOG (dialog), NULL, (GAsyncReadyCallback) error_dialog_cb, NULL);
 }
