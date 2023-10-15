@@ -104,52 +104,53 @@ entry_view_deleted_cb (EntryView *entry_view, Entry *entry, gpointer user_data)
   g_assert (removed);
 }
 
-static void
-name_finished (GtkDialog *dialog, int response_id, gpointer user_data)
+void
+entry_name_cb (GObject *obj,
+               GAsyncResult *res,
+               gpointer user_data)
 {
-  EntryNameDialog *name_dialog = DIARY_ENTRY_NAME_DIALOG (dialog);
-  EntryBrowser *self = DIARY_ENTRY_BROWSER (user_data);
+    EntryNameDialog *dialog = DIARY_ENTRY_NAME_DIALOG (obj);
+    EntryBrowser *self = DIARY_ENTRY_BROWSER (user_data);
 
-  if (response_id == GTK_RESPONSE_OK) {
-    gchar *text;
-    gchar *filename;
-    DiaryWindow *diary_window;
-    GtkListBoxRow *entry_listing_row;
-    EntryListing *entry_listing;
-    GtkWidget *entry_view;
-    GtkWidget *entry_edit;
-    Entry *entry;
+    g_autofree gchar *name = entry_name_dialog_open_finish(dialog, res);
+    if (name != NULL) {
+        gchar *text;
+        gchar *filename;
+        DiaryWindow *diary_window;
+        GtkListBoxRow *entry_listing_row;
+        EntryListing *entry_listing;
+        GtkWidget *entry_view;
+        GtkWidget *entry_edit;
+        Entry *entry;
 
-    diary_window = diary_window_get_instance ();
+        diary_window = diary_window_get_instance ();
 
-    text = entry_name_dialog_get_name (name_dialog);
-    // TODO: check if name contains dots or slashes
-    filename = g_strdup_printf ("%s.md", text);
+        text = entry_name_dialog_get_name (dialog);
+        // TODO: check if name contains dots or slashes
+        filename = g_strdup_printf ("%s.md", text);
 
-    entry_listing_row = entry_list_find (self->entry_list, filename);
-    if (entry_listing_row != NULL) {
-      g_free (filename);
-      entry_listing = DIARY_ENTRY_LISTING (gtk_list_box_row_get_child (entry_listing_row));
-      entry = entry_listing_get_entry (entry_listing);
-    } else {
-      gchar *folder = utils_get_diary_folder ();
-      entry = entry_new (folder, filename);
-      g_free (folder);
-      entry_list_add_entry (self->entry_list, entry);
-      entry_listing_row = entry_list_find (self->entry_list, filename);
+        entry_listing_row = entry_list_find (self->entry_list, filename);
+        if (entry_listing_row != NULL) {
+          g_free (filename);
+          entry_listing = DIARY_ENTRY_LISTING (gtk_list_box_row_get_child (entry_listing_row));
+          entry = entry_listing_get_entry (entry_listing);
+        } else {
+          gchar *folder = utils_get_diary_folder ();
+          entry = entry_new (folder, filename);
+          g_free (folder);
+          entry_list_add_entry (self->entry_list, entry);
+          entry_listing_row = entry_list_find (self->entry_list, filename);
+        }
+
+        entry_edit = entry_edit_new (entry);
+        entry_view = entry_view_new (entry);
+        g_signal_connect (entry_view, "deleted", G_CALLBACK (entry_view_deleted_cb), self);
+        entry_list_focus (self->entry_list, entry_listing_row);
+        diary_window_push_view (diary_window, entry_edit);
+
+        g_free (text);
+        g_free (filename);
     }
-
-    entry_edit = entry_edit_new (entry);
-    entry_view = entry_view_new (entry);
-    g_signal_connect (entry_view, "deleted", G_CALLBACK (entry_view_deleted_cb), self);
-    entry_list_focus (self->entry_list, entry_listing_row);
-    diary_window_push_view (diary_window, entry_edit);
-
-    g_free (text);
-    g_free (filename);
-  }
-
-  gtk_window_destroy (GTK_WINDOW (dialog));
 }
 
 static void
@@ -162,13 +163,8 @@ on_new_pressed (GtkWidget *widget)
   window = GTK_WINDOW (diary_window_get_instance ());
 
   dialog = entry_name_dialog_new ();
-  g_signal_connect (dialog,
-                    "response",
-                    G_CALLBACK (name_finished),
-                    self);
-  gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
 
-  gtk_widget_set_visible (dialog, TRUE);
+  entry_name_dialog_open(DIARY_ENTRY_NAME_DIALOG (dialog), window, entry_name_cb, self);
 }
 
 static void
