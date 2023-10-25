@@ -6,7 +6,7 @@
 
 struct _ImagePicker
 {
-  GtkDialog parent_instance;
+  GtkWindow parent_instance;
 
   /* widgets */
   GtkButton *add_button;
@@ -27,10 +27,10 @@ struct _ImagePicker
   gpointer user_data;
 };
 
-G_DEFINE_TYPE (ImagePicker, image_picker, GTK_TYPE_DIALOG);
+G_DEFINE_TYPE (ImagePicker, image_picker_dialog, GTK_TYPE_WINDOW);
 
 static void
-image_picker_class_init (ImagePickerClass *klass)
+image_picker_dialog_class_init (ImagePickerClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
@@ -49,36 +49,24 @@ image_picker_class_init (ImagePickerClass *klass)
 
 }
 
-static void
-response_ok_cb (GtkWidget *widget, gpointer user_data)
-{
-  GtkDialog *self = GTK_DIALOG (user_data);
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-  gtk_dialog_response (self, GTK_RESPONSE_OK);
-G_GNUC_END_IGNORE_DEPRECATIONS
-}
-
-static void select_file (GtkWidget *button, ImagePicker *image_picker);
-static void select_clipboard (GtkWidget *button, ImagePicker *image_picker);
+static void select_file (GtkWidget *button, ImagePicker *dialog);
+static void select_clipboard (GtkWidget *button, ImagePicker *dialog);
 
 static void
-image_picker_init (ImagePicker *self)
+image_picker_dialog_init (ImagePicker *self)
 {
-  //GtkDialog *dialog = GTK_DIALOG (self);
   self->picked_image_path = NULL;
 
   gtk_widget_init_template (GTK_WIDGET (self));
-
-  g_signal_connect (self->name_entry, "activate", (GCallback) response_ok_cb, self);
 
   g_signal_connect (self->file_button, "clicked", (GCallback) select_file, self);
   g_signal_connect (self->clipboard_button, "clicked", (GCallback) select_clipboard, self);
 }
 
 static void
-select_file_cb (GtkDialog *dialog, int response_id, gpointer user_data)
+select_file_cb (GtkDialog *file_chooser_dialog, int response_id, gpointer user_data)
 {
-  ImagePicker *image_picker = DIARY_IMAGE_PICKER (user_data);
+  ImagePicker *dialog = DIARY_IMAGE_PICKER_DIALOG (user_data);
 
   if (response_id == GTK_RESPONSE_ACCEPT) {
     GtkFileChooser *chooser;
@@ -87,7 +75,7 @@ select_file_cb (GtkDialog *dialog, int response_id, gpointer user_data)
     GdkTexture *texture;
     GError *err = NULL;
 
-    chooser = GTK_FILE_CHOOSER (dialog);
+    chooser = GTK_FILE_CHOOSER (file_chooser_dialog);
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     file = gtk_file_chooser_get_file (chooser);
 G_GNUC_END_IGNORE_DEPRECATIONS
@@ -100,25 +88,25 @@ G_GNUC_END_IGNORE_DEPRECATIONS
     }
 
     texture = gdk_texture_new_for_pixbuf (pixbuf);
-    if (image_picker->image_texture != NULL) {
-      g_object_unref (image_picker->image_texture);
+    if (dialog->image_texture != NULL) {
+      g_object_unref (dialog->image_texture);
     }
-    image_picker->image_texture = texture;
-    gtk_picture_set_paintable (image_picker->image_preview, GDK_PAINTABLE (texture));
+    dialog->image_texture = texture;
+    gtk_picture_set_paintable (dialog->image_preview, GDK_PAINTABLE (texture));
   }
 
-  gtk_window_destroy (GTK_WINDOW (dialog));
+  gtk_window_destroy (GTK_WINDOW (file_chooser_dialog));
 }
 
 /* Called when pressing "file_button" */
 static void
-select_file (GtkWidget *button, ImagePicker *image_picker)
+select_file (GtkWidget *button, ImagePicker *dialog)
 {
-  GtkWidget *dialog;
+  GtkWidget *file_chooser_dialog;
 
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-  dialog = gtk_file_chooser_dialog_new ("Select image file",
-                                        GTK_WINDOW (image_picker),
+  file_chooser_dialog = gtk_file_chooser_dialog_new ("Select image file",
+                                        GTK_WINDOW (dialog),
                                         GTK_FILE_CHOOSER_ACTION_OPEN,
                                         "Cancel",
                                         GTK_RESPONSE_CANCEL,
@@ -127,16 +115,16 @@ G_GNUC_BEGIN_IGNORE_DEPRECATIONS
                                         NULL);
 G_GNUC_END_IGNORE_DEPRECATIONS
 
-  g_signal_connect (dialog, "response",
+  g_signal_connect (file_chooser_dialog, "response",
                     G_CALLBACK (select_file_cb),
-                    image_picker);
+                    dialog);
 
-  gtk_widget_set_visible (dialog, TRUE);
+  gtk_widget_set_visible (file_chooser_dialog, TRUE);
 }
 
 static void
 select_clipboard_cb (GObject *source_object, GAsyncResult *result, gpointer user_data) {
-  ImagePicker *image_picker = DIARY_IMAGE_PICKER (user_data);
+  ImagePicker *dialog = DIARY_IMAGE_PICKER_DIALOG (user_data);
   GError *err = NULL;
   GdkClipboard *clipboard = GDK_CLIPBOARD (source_object);
   GdkTexture* texture;
@@ -146,11 +134,11 @@ select_clipboard_cb (GObject *source_object, GAsyncResult *result, gpointer user
       goto error;
   }
 
-  if (image_picker->image_texture) {
-    g_object_unref (image_picker->image_texture);
+  if (dialog->image_texture) {
+    g_object_unref (dialog->image_texture);
   }
-  image_picker->image_texture = texture;
-  gtk_picture_set_paintable (image_picker->image_preview, GDK_PAINTABLE (texture));
+  dialog->image_texture = texture;
+  gtk_picture_set_paintable (dialog->image_preview, GDK_PAINTABLE (texture));
 
 error:
   if (err != NULL) {
@@ -160,103 +148,130 @@ error:
 }
 
 static void
-select_clipboard (GtkWidget *button, ImagePicker *image_picker)
+select_clipboard (GtkWidget *button, ImagePicker *dialog)
 {
   GdkClipboard *clipboard;
 
-  clipboard = gtk_widget_get_clipboard (GTK_WIDGET (image_picker));
+  clipboard = gtk_widget_get_clipboard (GTK_WIDGET (dialog));
   if (clipboard == NULL) {
     utils_error_dialog ("Failed to get clipboard");
     return;
   }
 
-  gdk_clipboard_read_texture_async (clipboard, NULL, select_clipboard_cb, image_picker);
+  gdk_clipboard_read_texture_async (clipboard, NULL, select_clipboard_cb, dialog);
 }
 
-static gboolean
-save_image (ImagePicker *image_picker)
+ImagePicker *
+image_picker_dialog_new(gchar *basename)
 {
-  GError *err = NULL;
-  gchar *target_dir_absolute = NULL;
-  gchar *target_dir_relative = NULL;
-  gchar *image_path_absolute = NULL;
-  gchar *image_path_relative = NULL;
-  GtkEntryBuffer *buffer;
-  gchar *image_name = NULL;
+  ImagePicker *dialog;
 
-  buffer = gtk_entry_get_buffer (image_picker->name_entry);
+  dialog = g_object_new (DIARY_TYPE_IMAGE_PICKER_DIALOG, NULL);
+  dialog->basename = g_strdup (basename);
+
+  return dialog;
+}
+
+Image *
+image_new (gchar *name, gchar *path)
+{
+    Image *image = g_malloc0 (sizeof (Image));
+    image->name = name;
+    image->path = path;
+    return image;
+}
+
+void
+image_free (Image *image)
+{
+    g_free (image->name);
+    g_free (image->path);
+    g_free (image);
+}
+
+static Image *
+save_image (ImagePicker *dialog)
+{
+  g_autofree gchar *target_dir_absolute = NULL;
+  g_autofree gchar *target_dir_relative = NULL;
+  g_autofree gchar *image_path_absolute = NULL;
+  g_autofree gchar *image_path_relative = NULL;
+  g_autofree gchar *image_name = NULL;
+  GtkEntryBuffer *buffer;
+
+  buffer = gtk_entry_get_buffer (dialog->name_entry);
   image_name = g_strdup (gtk_entry_buffer_get_text (buffer));
 
   /* relative path */
-  g_print ("basename: %s\n", image_picker->basename);
-  target_dir_relative = utils_get_photos_folder (image_picker->basename, FALSE);
+  g_print ("basename: %s\n", dialog->basename);
+  target_dir_relative = utils_get_photos_folder (dialog->basename, FALSE);
   image_path_relative = g_strdup_printf ("%s/%s.png", target_dir_relative, image_name);
 
   /* absolute path */
-  target_dir_absolute = utils_get_photos_folder (image_picker->basename, TRUE);
+  target_dir_absolute = utils_get_photos_folder (dialog->basename, TRUE);
   image_path_absolute = g_strdup_printf ("%s/%s.png", target_dir_absolute, image_name);
 
   /* TODO: save as jpg instead of png
    * should be possible with gdk_texture_download together with gdkpixbuf somehow */
-  if (!gdk_texture_save_to_png (image_picker->image_texture, image_path_absolute)) {
+  if (!gdk_texture_save_to_png (dialog->image_texture, image_path_absolute)) {
       utils_error_dialog ("Could not save image to png file\n");
-      goto error;
+      return NULL;
   }
 
-  image_picker->finished_cb(image_name, image_path_relative, image_picker->user_data);
-
-  gtk_window_destroy (GTK_WINDOW (image_picker));
-
-error:
-  if (err != NULL) {
-    utils_error_dialog ("Failed to save image: %s\n", err->message);
-    g_clear_error (&err);
-  }
-
-  g_free (target_dir_relative);
-  g_free (target_dir_absolute);
-  g_free (image_path_relative);
-  g_free (image_path_absolute);
-  g_free (image_name);
-
-  return TRUE;
+  return image_new (g_steal_pointer (&image_name), g_steal_pointer (&image_path_relative));
 }
 
-/* Called when the Insert button is pressed in the ImagePicker dialog */
 static void
-image_picker_response (GtkDialog *dialog, int response_id, gpointer user_data)
+dialog_response (GtkWidget *widget,
+                 gpointer user_data)
 {
-  ImagePicker *image_picker = DIARY_IMAGE_PICKER (dialog);
-
-  if (response_id != GTK_RESPONSE_OK) {
-    /* cancel */
-    gtk_window_destroy (GTK_WINDOW (image_picker));
-  } else {
-    if (save_image (image_picker)) {
-      gtk_window_destroy (GTK_WINDOW (image_picker));
+    GTask *task = G_TASK (user_data);
+    ImagePicker *dialog = DIARY_IMAGE_PICKER_DIALOG (g_task_get_source_object (task));
+    Image *image = save_image(dialog);
+    if (image) {
+        gtk_window_close (GTK_WINDOW (dialog));
+        g_task_return_pointer (task, image, (GDestroyNotify) image_free);
+    } else {
+        g_task_return_pointer (task, NULL, NULL);
     }
-  }
+}
 
-  g_free (image_picker->basename);
+static void
+dialog_cancel (GtkWidget *widget,
+               gpointer user_data)
+{
+    GTask *task = G_TASK (user_data);
+    ImagePicker *dialog = DIARY_IMAGE_PICKER_DIALOG (g_task_get_source_object (task));
+    gtk_window_close (GTK_WINDOW (dialog));
+    g_task_return_pointer (task, NULL, NULL);
 }
 
 void
-image_picker_run (gchar *basename, void (*finished_cb)(gchar *image_name, gchar *image_path, gpointer user_data), gpointer user_data)
+image_picker_dialog_open(ImagePicker *self,
+                         GtkWindow   *parent,
+                         GAsyncReadyCallback callback,
+                         gpointer user_data)
 {
-  ImagePicker *image_picker;
-  GtkWindow *window;
+  GTask *task;
 
-  window = GTK_WINDOW (diary_window_get_instance ());
-  image_picker = g_object_new (DIARY_TYPE_IMAGE_PICKER, NULL);
-  image_picker->basename = g_strdup (basename);
-  image_picker->finished_cb = finished_cb;
-  image_picker->user_data = user_data;
+  task = g_task_new (self, FALSE, callback, user_data);
+  g_task_set_check_cancellable (task, FALSE);
+  g_task_set_source_tag (task, image_picker_dialog_open);
+  g_task_set_task_data (task, user_data, NULL);
 
-  g_signal_connect (image_picker,
-                    "response",
-                    G_CALLBACK (image_picker_response),
-                    NULL);
+  g_signal_connect (self->name_entry, "activate", G_CALLBACK (dialog_response), task);
+  g_signal_connect (self->add_button, "clicked", G_CALLBACK (dialog_response), task);
+  g_signal_connect (self->cancel_button, "clicked", G_CALLBACK (dialog_cancel), task);
 
-  gtk_window_set_transient_for (GTK_WINDOW (image_picker), window);
-  gtk_widget_set_visible (GTK_WIDGET (image_picker), TRUE);
+  gtk_window_set_transient_for (GTK_WINDOW (self), parent);
+  gtk_widget_set_visible (GTK_WIDGET (self), TRUE);
+}
+
+Image *
+image_picker_dialog_open_finish (ImagePicker *self,
+                                 GAsyncResult *result)
+{
+  gtk_window_destroy (GTK_WINDOW (self));
+
+  return g_task_propagate_pointer (G_TASK (result), NULL);
 }
