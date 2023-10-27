@@ -99,17 +99,16 @@ entry_rename_file (Entry *self, gchar *new_name)
   old_photos_path_short = g_strdup_printf ("photos/%s", old_basename);
   new_photos_path_short = g_strdup_printf ("photos/%s", new_basename);
   GError *err = NULL;
-  gchar *text = entry_read (self, &err);
-  if (text == NULL) {
+  g_autofree gchar *input_text = entry_read (self, &err);
+  if (input_text == NULL) {
     // TODO: Exit gracefully, show popup
     g_printerr ("Failed to read diary entry '%s': %s\n", old_basename, err->message);
     exit(EXIT_FAILURE);
   }
-  char **split = g_strsplit(text, old_photos_path_short, -1);
-  g_free(text);
-  text = g_strjoinv(new_photos_path_short, split);
+  char **split = g_strsplit(input_text, old_photos_path_short, -1);
+  g_autofree char* output_text = g_strjoinv(new_photos_path_short, split);
   g_strfreev(split);
-  if (!entry_write (self, text, NULL)) {
+  if (!entry_write (self, output_text, NULL)) {
     // TODO: Exit gracefully, show popup
     g_printerr ("Failed to write diary entry '%s': %s\n", old_basename, err->message);
     exit(EXIT_FAILURE);

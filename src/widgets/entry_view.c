@@ -75,7 +75,7 @@ rename_cb (GObject *obj,
     g_autofree gchar *name = entry_rename_dialog_open_finish(dialog, res);
     if (name != NULL) {
         // TODO: check if name contains dots or slashes
-        gchar *name_with_extension = g_strdup_printf ("%s.md", name);
+        g_autofree gchar *name_with_extension = g_strdup_printf ("%s.md", name);
         g_print ("Renaming entry to '%s'\n", name_with_extension);
         entry_rename_file (entry, name_with_extension);
     }

@@ -55,7 +55,9 @@ entry_browser_set_content (EntryBrowser *self, GtkWidget *widget)
     self->content_box_child = widget;
     gtk_box_append (self->content_box, self->content_box_child);
     g_object_set (self->content_box, "visible", TRUE, NULL);
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     adw_leaflet_set_visible_child (self->leaflet, GTK_WIDGET (self->content_box));
+G_GNUC_END_IGNORE_DEPRECATIONS
     gtk_widget_set_hexpand (GTK_WIDGET (self->entry_list_box), FALSE);
   }
 
@@ -72,19 +74,6 @@ on_enter (GtkWidget *widget, GtkButton *new_button, GtkButton *back_button, GtkB
 
   g_object_set (settings_button, "visible", TRUE, NULL);
   update_header_buttons (self);
-
-  /* hide content box if nothing in stack */
-  /*
-  if (g_list_length (self->view_stack) == 0) {
-    //g_object_set (self->content_box, "visible", FALSE, NULL);
-    //adw_leaflet_set_visible_child (self->leaflet, GTK_WIDGET (self->entry_list_container));
-    //gtk_widget_set_hexpand (GTK_WIDGET (self->entry_list_container), TRUE);
-  } else {
-    //g_object_set (self->content_box, "visible", TRUE, NULL);
-    //adw_leaflet_set_visible_child (self->leaflet, GTK_WIDGET (self->content_box));
-    //gtk_widget_set_hexpand (GTK_WIDGET (self->entry_list_container), FALSE);
-  }
-  */
 }
 
 static void
@@ -222,7 +211,9 @@ entry_browser_init (EntryBrowser *self)
 
   g_signal_connect (self->entry_list, "selection-changed", G_CALLBACK (entry_selected_changed_cb), self);
 
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
   adw_leaflet_set_visible_child (self->leaflet, GTK_WIDGET (self->entry_list_box));
+G_GNUC_END_IGNORE_DEPRECATIONS
 
   g_object_set (self->content_box, "visible", FALSE, NULL);
 }

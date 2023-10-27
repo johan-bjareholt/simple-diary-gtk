@@ -142,7 +142,7 @@ ColorScheme
 settings_get_color_scheme (void)
 {
   ColorScheme color_scheme;
-  gchar *color_scheme_str;
+  g_autofree gchar *color_scheme_str;
 
   g_assert_nonnull (keyfile);
 
@@ -204,9 +204,10 @@ settings_load_default_config (void)
 {
   gboolean write = FALSE;
   GError *err = NULL;
+  g_autofree gchar *notebook = NULL;
 
   // Notebooks.Default
-  g_key_file_get_string (keyfile, "Notebooks", "Default", &err);
+  notebook = g_key_file_get_string (keyfile, "Notebooks", "Default", &err);
   if (err != NULL) {
     if (g_error_matches (err, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_KEY_NOT_FOUND) ||
         g_error_matches (err, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_GROUP_NOT_FOUND)) {
