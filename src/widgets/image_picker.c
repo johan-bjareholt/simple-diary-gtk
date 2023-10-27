@@ -64,21 +64,19 @@ image_picker_dialog_init (ImagePicker *self)
 }
 
 static void
-select_file_cb (GtkDialog *file_chooser_dialog, int response_id, gpointer user_data)
+open_file_cb(GObject* source_object, GAsyncResult* res, gpointer user_data)
 {
-  ImagePicker *dialog = DIARY_IMAGE_PICKER_DIALOG (user_data);
-
-  if (response_id == GTK_RESPONSE_ACCEPT) {
-    GtkFileChooser *chooser;
-    GFile *file;
+    GtkFileDialog *file_dialog = GTK_FILE_DIALOG(source_object);
+    ImagePicker *dialog = DIARY_IMAGE_PICKER_DIALOG(user_data);
     GdkPixbuf *pixbuf;
     GdkTexture *texture;
     GError *err = NULL;
 
-    chooser = GTK_FILE_CHOOSER (file_chooser_dialog);
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    file = gtk_file_chooser_get_file (chooser);
-G_GNUC_END_IGNORE_DEPRECATIONS
+    GFile* file = gtk_file_dialog_open_finish (file_dialog, res, &err);
+    if (file == NULL) {
+        g_print("Failed to select file: %s", err->message);
+        return;
+    }
 
     pixbuf = gdk_pixbuf_new_from_file (g_file_peek_path (file), &err);
     if (pixbuf == NULL) {
@@ -93,33 +91,20 @@ G_GNUC_END_IGNORE_DEPRECATIONS
     }
     dialog->image_texture = texture;
     gtk_picture_set_paintable (dialog->image_preview, GDK_PAINTABLE (texture));
-  }
-
-  gtk_window_destroy (GTK_WINDOW (file_chooser_dialog));
 }
 
 /* Called when pressing "file_button" */
 static void
 select_file (GtkWidget *button, ImagePicker *dialog)
 {
-  GtkWidget *file_chooser_dialog;
+    GtkFileDialog *file_dialog;
 
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-  file_chooser_dialog = gtk_file_chooser_dialog_new ("Select image file",
-                                        GTK_WINDOW (dialog),
-                                        GTK_FILE_CHOOSER_ACTION_OPEN,
-                                        "Cancel",
-                                        GTK_RESPONSE_CANCEL,
-                                        "Select",
-                                        GTK_RESPONSE_ACCEPT,
-                                        NULL);
-G_GNUC_END_IGNORE_DEPRECATIONS
-
-  g_signal_connect (file_chooser_dialog, "response",
-                    G_CALLBACK (select_file_cb),
-                    dialog);
-
-  gtk_widget_set_visible (file_chooser_dialog, TRUE);
+    file_dialog = gtk_file_dialog_new();
+    gtk_file_dialog_open (file_dialog,
+                          GTK_WINDOW(diary_window_get_instance()),
+                          NULL,
+                          open_file_cb,
+                          dialog);
 }
 
 static void

@@ -17,7 +17,7 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(Image, image_free);
 
 #define DIARY_TYPE_IMAGE_PICKER_DIALOG (image_picker_dialog_get_type())
 
-G_DECLARE_FINAL_TYPE (ImagePicker, image_picker_dialog, DIARY, IMAGE_PICKER_DIALOG, GtkDialog);
+G_DECLARE_FINAL_TYPE (ImagePicker, image_picker_dialog, DIARY, IMAGE_PICKER_DIALOG, GtkWindow);
 
 ImagePicker *
 image_picker_dialog_new(gchar *basename);
