@@ -142,7 +142,7 @@ ColorScheme
 settings_get_color_scheme (void)
 {
   ColorScheme color_scheme;
-  g_autofree gchar *color_scheme_str;
+  g_autofree gchar *color_scheme_str = NULL;
 
   g_assert_nonnull (keyfile);
 
@@ -171,7 +171,7 @@ void
 settings_set_color_scheme (ColorScheme color_scheme)
 {
   GError *err = NULL;
-  gchar *color_scheme_str;
+  gchar *color_scheme_str = NULL;
 
   g_assert_nonnull (keyfile);
 

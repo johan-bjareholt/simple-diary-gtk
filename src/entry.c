@@ -57,6 +57,9 @@ entry_rename_file (Entry *self, gchar *new_name)
   gchar *old_basename;
   gchar *new_basename;
 
+  g_autofree char* input_text = NULL;
+  g_autofree char* output_text = NULL;
+
   gchar *old_photos_path_full = NULL;
   gchar *new_photos_path_full = NULL;
 
@@ -99,14 +102,14 @@ entry_rename_file (Entry *self, gchar *new_name)
   old_photos_path_short = g_strdup_printf ("photos/%s", old_basename);
   new_photos_path_short = g_strdup_printf ("photos/%s", new_basename);
   GError *err = NULL;
-  g_autofree gchar *input_text = entry_read (self, &err);
+  input_text = entry_read (self, &err);
   if (input_text == NULL) {
     // TODO: Exit gracefully, show popup
     g_printerr ("Failed to read diary entry '%s': %s\n", old_basename, err->message);
     exit(EXIT_FAILURE);
   }
   char **split = g_strsplit(input_text, old_photos_path_short, -1);
-  g_autofree char* output_text = g_strjoinv(new_photos_path_short, split);
+  output_text = g_strjoinv(new_photos_path_short, split);
   g_strfreev(split);
   if (!entry_write (self, output_text, NULL)) {
     // TODO: Exit gracefully, show popup
@@ -235,7 +238,7 @@ entry_delete (Entry *self)
 {
   gboolean ret = FALSE;
   GFile *file;
-  GDir *dir;
+  GDir *dir = NULL;
   gchar *filepath = NULL;
   const gchar *filename = NULL;
   gchar *basename = NULL;
