@@ -31,8 +31,12 @@
         <child type="overlay">
           <object class="GtkBox">
             <property name="can-focus">False</property>
-            <property name="css-classes">toolbar
-card</property>
+            <style>
+              <class name="toolbar"/>
+              <class name="linked"/>
+              <class name="osd"/>
+              <class name="view"/>
+            </style>
             <property name="halign">center</property>
             <property name="hexpand">True</property>
             <property name="margin-bottom">15</property>
@@ -71,9 +75,6 @@ card</property>
                 </child>
               </object>
             </child>
-            <style>
-              <class name="linked"/>
-            </style>
           </object>
         </child>
       </object>
