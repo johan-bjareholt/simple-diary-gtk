@@ -57,6 +57,24 @@
 
     <content_rating type="oars-1.1"/>
     <releases>
+        <release version="v0.4.5" date="2023-10-28">
+            <description>
+                <ul>
+                    <li>Minor UI improvements</li>
+                    <li>Update flatpak runtime to Gnome 45</li>
+                    <li>Rewrite dialogs that use code deprecated in GTK 4.10</li>
+                </ul>
+            </description>
+        </release>
+
+        <release version="v0.4.4" date="2022-11-06">
+            <description>
+                <ul>
+                    <li>Fix crash when creating new entry</li>
+                </ul>
+            </description>
+        </release>
+
         <release version="v0.4.3" date="2022-11-06">
             <description>
                 <ul>
