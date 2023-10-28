@@ -17,7 +17,7 @@ init(GtkApplication *app)
     gchar *msg = g_strdup_printf (
         "Failed to create diary folder at '%s' because:\n%s",
         diary_path, strerror(errno));
-    utils_error_dialog(msg);
+    g_printerr(msg);
     g_free (msg);
     return;
   }

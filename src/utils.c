@@ -25,6 +25,7 @@ utils_error_dialog(gchar *format, ...)
 
   va_start (args, format);
   g_vasprintf (&message, format, args);
+  g_printerr("Error: %s", message);
 
   window = GTK_WINDOW (diary_window_get_instance ());
   dialog = adw_message_dialog_new (window, "Error", message);
