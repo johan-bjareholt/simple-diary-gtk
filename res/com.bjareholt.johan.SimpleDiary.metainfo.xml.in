@@ -57,6 +57,14 @@
 
     <content_rating type="oars-1.1"/>
     <releases>
+        <release version="v0.4.6" date="2023-10-29">
+            <description>
+                <ul>
+                    <li>Flatpak no longer needs read/write access to the whole home folder</li>
+                </ul>
+            </description>
+        </release>
+
         <release version="v0.4.5" date="2023-10-28">
             <description>
                 <ul>
