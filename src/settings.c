@@ -74,53 +74,6 @@ default_data_dir(void)
   return dir;
 }
 
-/* migrations */
-
-/* This migration is made because:
- * When the flatpak was first made, it wrote the config to ~/.config and the
- * data to ~/Documents. This required extra permissions in the flatpak.
- * The migration will move the data to its respective XDG dirs, so it's reading
- * and writing in a folder which fits the flatpak security model.
- * Once this migration has existed for a year or more, I think we should remove
- * it altogether and then remove the permission in the flatpak to write in the
- * users home folder.
- *
- * TODO: This code was written 2022-11-06, so at least a year after this date
- * we should consider fixing this */
-static void
-migrate_datadir(void)
-{
-  g_autofree gchar *new_str = NULL;
-  g_autofree gchar *old_str = NULL;
-
-  new_str = default_data_dir();
-  old_str = home_data_dir();
-
-  if (!g_file_test(new_str, G_FILE_TEST_EXISTS) &&
-      g_file_test(old_str, G_FILE_TEST_EXISTS)) {
-    int ret;
-    g_autofree gchar *cmd = NULL;
-    g_autofree gchar *old_config_dir = NULL;
-    g_autofree gchar *old_config = NULL;
-
-    g_print("Migrating data from %s to %s\n", old_str, new_str);
-    cmd = g_strdup_printf("mv %s %s", old_str, new_str);
-    errno = 0;
-    ret = system(cmd);
-    if (ret != 0) {
-        g_printerr("Failed to migrate datadir: %s\n", strerror(errno));
-        exit(1);
-    }
-
-    old_config_dir = home_config_dir();
-    old_config = g_strdup_printf("%s/settings.ini", old_config_dir);
-
-    g_unlink(old_config);
-  }
-}
-
-/* ... */
-
 gchar *
 settings_get_diary_folder (void)
 {
@@ -245,8 +198,6 @@ settings_init (void)
   GError *err = NULL;
 
   g_assert_null (keyfile);
-
-  migrate_datadir();
 
   config_folder = config_dir();
   g_print("Config folder is '%s'\n", config_folder);
