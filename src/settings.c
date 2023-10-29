@@ -8,70 +8,16 @@
 static gchar *keyfile_path = NULL;
 static GKeyFile *keyfile = NULL;
 
-/* config home paths */
-
-static gchar *
-xdg_config_dir(void)
-{
-  gchar *dir = NULL;
-  const char *xdg_config_home = getenv("XDG_CONFIG_HOME");
-  if (xdg_config_home) {
-    dir = g_strdup_printf ("%s/simple-diary", xdg_config_home);
-  }
-  return dir;
-}
-
-static gchar *
-home_config_dir(void)
-{
-  const char *home = getenv("HOME");
-  return g_strdup_printf ("%s/.config/simple-diary", home);
-}
-
 static gchar *
 config_dir(void)
 {
-  gchar *dir = NULL;
-
-  dir = xdg_config_dir();
-  if (dir == NULL) {
-    dir = home_config_dir();
-  }
-
-  return dir;
-}
-
-/* data dir paths */
-
-static gchar *
-xdg_data_dir(void)
-{
-  gchar *dir = NULL;
-  const char *xdg_config_home = getenv("XDG_DATA_HOME");
-  if (xdg_config_home) {
-    dir = g_strdup_printf ("%s/SimpleDiary", xdg_config_home);
-  }
-  return dir;
-}
-
-static gchar *
-home_data_dir(void)
-{
-  const char *home = getenv("HOME");
-  return g_strdup_printf ("%s/Documents/SimpleDiary", home);
+  return g_strdup_printf("%s/simple-diary", g_get_user_config_dir ());
 }
 
 static gchar *
 default_data_dir(void)
 {
-  gchar *dir = NULL;
-
-  dir = xdg_data_dir();
-  if (dir == NULL) {
-    dir = home_data_dir();
-  }
-
-  return dir;
+  return g_strdup_printf("%s/SimpleDiary", g_get_user_data_dir ());
 }
 
 gchar *
