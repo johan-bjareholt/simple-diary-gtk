@@ -11,7 +11,7 @@
 
 struct _DiaryWindow
 {
-  GtkApplicationWindow parent_instance;
+  AdwApplicationWindow parent_instance;
 
   /* widgets */
   GtkStack *content_stack;
@@ -23,7 +23,7 @@ struct _DiaryWindow
   GList *view_stack;
 };
 
-G_DEFINE_TYPE (DiaryWindow, diary_window, GTK_TYPE_APPLICATION_WINDOW);
+G_DEFINE_TYPE (DiaryWindow, diary_window, ADW_TYPE_APPLICATION_WINDOW);
 
 static DiaryWindow *diary_window_instance = NULL;
 

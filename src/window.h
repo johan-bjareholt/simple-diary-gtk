@@ -1,10 +1,11 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <adwaita.h>
 
 #define DIARY_TYPE_WINDOW (diary_window_get_type())
 
-G_DECLARE_FINAL_TYPE (DiaryWindow, diary_window, DIARY, WINDOW, GtkApplicationWindow)
+G_DECLARE_FINAL_TYPE (DiaryWindow, diary_window, DIARY, WINDOW, AdwApplicationWindow)
 
 DiaryWindow *
 diary_window_get_instance (void);
