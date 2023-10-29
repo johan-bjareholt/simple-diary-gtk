@@ -13,9 +13,10 @@ init(GtkApplication *app)
   gchar *diary_path;
 
   diary_path = utils_get_diary_folder ();
+  g_print("Diary folder is '%s'\n", diary_path);
   if (g_mkdir_with_parents (diary_path, 0750) < 0) {
     gchar *msg = g_strdup_printf (
-        "Failed to create diary folder at '%s' because:\n%s",
+        "Failed to create diary folder at '%s' because:\n%s\n",
         diary_path, strerror(errno));
     g_printerr(msg);
     g_free (msg);

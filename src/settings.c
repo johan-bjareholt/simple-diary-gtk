@@ -249,6 +249,7 @@ settings_init (void)
   migrate_datadir();
 
   config_folder = config_dir();
+  g_print("Config folder is '%s'\n", config_folder);
   if (g_mkdir_with_parents (config_folder, 0750) < 0) {
     g_printerr ("Failed to create config folder: %s\n", err->message);
     exit (EXIT_FAILURE);
