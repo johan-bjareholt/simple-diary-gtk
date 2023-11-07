@@ -152,7 +152,6 @@ entry_view_load_md (EntryView *self)
 
   gtk_viewport_set_child (GTK_VIEWPORT (self->md_viewport), self->md_view);
 
-  //g_free (folder_uri);
   g_free (text_md);
   g_free (folder);
 }

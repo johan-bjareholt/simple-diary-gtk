@@ -13,9 +13,9 @@
 
 struct _EntryBrowser
 {
-  GtkBox parent_instance;
+  AdwBreakpointBin parent_instance;
 
-  AdwLeaflet *leaflet;
+  AdwNavigationSplitView *split_view;
   EntryList *entry_list;
   GtkBox *entry_list_box;
   GtkBox *content_box;
@@ -49,16 +49,11 @@ entry_browser_set_content (EntryBrowser *self, GtkWidget *widget)
   // Add new content if there is any
   if (widget == NULL) {
     self->content_box_child = NULL;
-    g_object_set (self->content_box, "visible", FALSE, NULL);
-    gtk_widget_set_hexpand (GTK_WIDGET (self->entry_list_box), TRUE);
+    g_object_set(self->split_view, "show-content", FALSE, NULL);
   } else {
     self->content_box_child = widget;
     gtk_box_append (self->content_box, self->content_box_child);
-    g_object_set (self->content_box, "visible", TRUE, NULL);
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    adw_leaflet_set_visible_child (self->leaflet, GTK_WIDGET (self->content_box));
-G_GNUC_END_IGNORE_DEPRECATIONS
-    gtk_widget_set_hexpand (GTK_WIDGET (self->entry_list_box), FALSE);
+    g_object_set(self->split_view, "show-content", TRUE, NULL);
   }
 
   update_header_buttons (self);
@@ -173,7 +168,7 @@ diary_header_buttons_control_init (HeaderButtonsControlInterface *iface)
     iface->on_back_pressed = on_back_pressed;
 }
 
-G_DEFINE_TYPE_WITH_CODE (EntryBrowser, entry_browser, GTK_TYPE_BOX,
+G_DEFINE_TYPE_WITH_CODE (EntryBrowser, entry_browser, ADW_TYPE_BREAKPOINT_BIN,
     G_IMPLEMENT_INTERFACE (DIARY_TYPE_HEADER_BUTTONS, diary_header_buttons_control_init));
 
 static void
@@ -194,7 +189,7 @@ entry_browser_class_init (EntryBrowserClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   gtk_widget_class_set_template_from_resource (widget_class, "/com/bjareholt/johan/simple-diary/ui/entry_browser.ui");
-  gtk_widget_class_bind_template_child (widget_class, EntryBrowser, leaflet);
+  gtk_widget_class_bind_template_child (widget_class, EntryBrowser, split_view);
   gtk_widget_class_bind_template_child (widget_class, EntryBrowser, entry_list_box);
   gtk_widget_class_bind_template_child (widget_class, EntryBrowser, content_box);
 }
@@ -210,12 +205,6 @@ entry_browser_init (EntryBrowser *self)
   gtk_box_append (self->entry_list_box, GTK_WIDGET (self->entry_list));
 
   g_signal_connect (self->entry_list, "selection-changed", G_CALLBACK (entry_selected_changed_cb), self);
-
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-  adw_leaflet_set_visible_child (self->leaflet, GTK_WIDGET (self->entry_list_box));
-G_GNUC_END_IGNORE_DEPRECATIONS
-
-  g_object_set (self->content_box, "visible", FALSE, NULL);
 }
 
 GtkWidget *

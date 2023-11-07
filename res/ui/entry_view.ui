@@ -11,9 +11,9 @@
       <object class="GtkOverlay">
         <child>
           <object class="GtkScrolledWindow">
-            <property name="hexpand">False</property>
-            <property name="hscrollbar-policy">GTK_POLICY_NEVER</property>
+            <property name="hexpand">True</property>
             <property name="vexpand">True</property>
+            <property name="hscrollbar-policy">GTK_POLICY_NEVER</property>
             <child>
               <object class="GtkViewport" id="md_viewport">
                 <property name="margin-bottom">10</property>
