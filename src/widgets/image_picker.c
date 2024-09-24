@@ -70,7 +70,7 @@ open_file_cb(GObject* source_object, GAsyncResult* res, gpointer user_data)
     ImagePicker *dialog = DIARY_IMAGE_PICKER_DIALOG (user_data);
     GdkPixbuf *pixbuf;
     GdkTexture *texture;
-    g_autoptr(GFile) file;
+    g_autoptr(GFile) file = NULL;
     GError *err = NULL;
 
     file = gtk_file_dialog_open_finish (file_dialog, res, &err);
