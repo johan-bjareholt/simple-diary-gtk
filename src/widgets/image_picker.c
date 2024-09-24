@@ -66,13 +66,14 @@ image_picker_dialog_init (ImagePicker *self)
 static void
 open_file_cb(GObject* source_object, GAsyncResult* res, gpointer user_data)
 {
-    GtkFileDialog *file_dialog = GTK_FILE_DIALOG(source_object);
-    ImagePicker *dialog = DIARY_IMAGE_PICKER_DIALOG(user_data);
+    GtkFileDialog *file_dialog = GTK_FILE_DIALOG (source_object);
+    ImagePicker *dialog = DIARY_IMAGE_PICKER_DIALOG (user_data);
     GdkPixbuf *pixbuf;
     GdkTexture *texture;
+    g_autoptr(GFile) file;
     GError *err = NULL;
 
-    GFile* file = gtk_file_dialog_open_finish (file_dialog, res, &err);
+    file = gtk_file_dialog_open_finish (file_dialog, res, &err);
     if (file == NULL) {
         g_print("Failed to select file: %s\n", err->message);
         return;
@@ -101,7 +102,7 @@ select_file (GtkWidget *button, ImagePicker *dialog)
 
     file_dialog = gtk_file_dialog_new();
     gtk_file_dialog_open (file_dialog,
-                          GTK_WINDOW(diary_window_get_instance()),
+                          GTK_WINDOW (dialog),
                           NULL,
                           open_file_cb,
                           dialog);
