@@ -74,13 +74,13 @@ open_file_cb(GObject* source_object, GAsyncResult* res, gpointer user_data)
 
     GFile* file = gtk_file_dialog_open_finish (file_dialog, res, &err);
     if (file == NULL) {
-        g_print("Failed to select file: %s", err->message);
+        g_print("Failed to select file: %s\n", err->message);
         return;
     }
 
     pixbuf = gdk_pixbuf_new_from_file (g_file_peek_path (file), &err);
     if (pixbuf == NULL) {
-      utils_error_dialog ("Failed to load image: %s\n", err->message);
+      utils_error_dialog (GTK_WIDGET (dialog), "Failed to load image: %s\n", err->message);
       g_clear_error (&err);
       return;
     }
@@ -127,7 +127,7 @@ select_clipboard_cb (GObject *source_object, GAsyncResult *result, gpointer user
 
 error:
   if (err != NULL) {
-    utils_error_dialog ("Failed to save image: %s\n", err->message);
+    utils_error_dialog (GTK_WIDGET (dialog), "Failed to save image: %s\n", err->message);
     g_clear_error (&err);
   }
 }
@@ -139,7 +139,7 @@ select_clipboard (GtkWidget *button, ImagePicker *dialog)
 
   clipboard = gtk_widget_get_clipboard (GTK_WIDGET (dialog));
   if (clipboard == NULL) {
-    utils_error_dialog ("Failed to get clipboard");
+    utils_error_dialog (GTK_WIDGET (dialog), "Failed to get clipboard");
     return;
   }
 
@@ -199,7 +199,7 @@ save_image (ImagePicker *dialog)
   /* TODO: save as jpg instead of png
    * should be possible with gdk_texture_download together with gdkpixbuf somehow */
   if (!gdk_texture_save_to_png (dialog->image_texture, image_path_absolute)) {
-      utils_error_dialog ("Could not save image to png file\n");
+      utils_error_dialog (GTK_WIDGET (dialog), "Could not save image to png file\n");
       return NULL;
   }
 

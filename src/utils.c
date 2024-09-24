@@ -16,10 +16,9 @@ error_dialog_cb (AdwMessageDialog *dialog,
 }
 
 void
-utils_error_dialog(gchar *format, ...)
+utils_error_dialog(GtkWidget *parent, gchar *format, ...)
 {
-  GtkWidget *dialog;
-  GtkWindow *window;
+  AdwDialog *dialog;
   gchar *message;
   va_list args;
 
@@ -27,16 +26,15 @@ utils_error_dialog(gchar *format, ...)
   g_vasprintf (&message, format, args);
   g_printerr("Error: %s", message);
 
-  window = GTK_WINDOW (diary_window_get_instance ());
-  dialog = adw_message_dialog_new (window, "Error", message);
+  dialog = adw_alert_dialog_new ("Error", message);
 
 
-  adw_message_dialog_add_responses (ADW_MESSAGE_DIALOG (dialog),
+  adw_alert_dialog_add_responses (ADW_ALERT_DIALOG (dialog),
                                     "close", "_Close",
                                     NULL);
-  adw_message_dialog_set_response_appearance (ADW_MESSAGE_DIALOG (dialog), "close", ADW_RESPONSE_DESTRUCTIVE);
+  adw_alert_dialog_set_response_appearance (ADW_ALERT_DIALOG (dialog), "close", ADW_RESPONSE_DESTRUCTIVE);
 
-  adw_message_dialog_choose (ADW_MESSAGE_DIALOG (dialog), NULL, (GAsyncReadyCallback) error_dialog_cb, NULL);
+  adw_alert_dialog_choose (ADW_ALERT_DIALOG (dialog), parent, NULL, (GAsyncReadyCallback) error_dialog_cb, NULL);
 }
 
 gchar *
@@ -62,7 +60,9 @@ utils_get_photos_folder (gchar *basename, gboolean absolute)
 
     msg = g_strdup_printf ("Failed to create folder at '%s' because: %s\n",
                            photos_folder_absolute, strerror(errno));
-    utils_error_dialog(msg);
+    GtkWindow *window;
+    window = GTK_WINDOW (diary_window_get_instance ());
+    utils_error_dialog(GTK_WIDGET (window), msg);
     g_free (msg);
     g_free (photos_folder_absolute);
     photos_folder_absolute = NULL;

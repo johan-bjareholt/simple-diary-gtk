@@ -1,8 +1,9 @@
 #pragma once
 
 #include <glib.h>
+#include <gtk/gtk.h>
 
-void utils_error_dialog (gchar *message, ...);
+void utils_error_dialog (GtkWidget *widget, gchar *message, ...);
 
 gchar *utils_get_diary_folder (void);
 
