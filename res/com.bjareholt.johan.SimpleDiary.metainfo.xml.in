@@ -26,7 +26,7 @@
     <launchable type="desktop-id">@app_id@.desktop</launchable>
 
     <screenshots>
-        <screenshot>
+        <screenshot type="default">
             <caption>View of the list of diary entries</caption>
             <image>https://johan.bjareholt.com/img/projects/simple-diary/entry_view.png</image>
         </screenshot>
@@ -39,13 +39,15 @@
     <recommends>
         <control>pointing</control>
         <control>keyboard</control>
+        <control>tablet</control>
         <control>touch</control>
+        <display_length compare="ge">360</display_length>
     </recommends>
-    <requires>
-        <display_length compare="ge">small</display_length>
-    </requires>
 
-    <developer_name>Johan Bjäreholt</developer_name>
+    <developer id="com.bjareholt.johan">
+        <name>Johan Bjäreholt</name>
+    </developer>
+
     <update_contact>johan _AT_ bjareho.lt</update_contact>
     <project_license>GPL-3.0+</project_license>
     <metadata_license>MIT</metadata_license>
@@ -57,6 +59,14 @@
 
     <content_rating type="oars-1.1"/>
     <releases>
+        <release version="v0.4.8" date="2024-09-27">
+            <description>
+                <ul>
+                    <li>Fix appstream metainfo issues</li>
+                </ul>
+            </description>
+        </release>
+
         <release version="v0.4.7" date="2024-09-24">
             <description>
                 <ul>
