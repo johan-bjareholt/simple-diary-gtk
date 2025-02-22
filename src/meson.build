@@ -26,6 +26,7 @@ diary_deps = [
   adwaita_dep,
   gdkpixbuf_dep,
   gtkmdview_dep,
+  gtkmdeditor_dep,
 ]
 
 executable(

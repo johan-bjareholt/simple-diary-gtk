@@ -1,3 +1,5 @@
+#include <gtkmdeditor/gtkmdeditor.h>
+
 #include "entry_edit.h"
 #include "image_picker.h"
 #include "utils.h"
@@ -9,7 +11,8 @@ struct _EntryEdit
   GtkBox parent_instance;
 
   /* widgets */
-  GtkTextView *text_view;
+  GtkScrolledWindow *entry_edit_viewport;
+  GtkMdEditor *md_editor;
   GtkButton *add_image_button;
 
   /* properties */
@@ -93,7 +96,7 @@ static void entry_edit_read(EntryEdit *self)
     goto cleanup;
   }
 
-  buffer = gtk_text_view_get_buffer (self->text_view);
+  buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(self->md_editor));
   gtk_text_buffer_set_text (buffer, body, -1);
 
 cleanup:
@@ -113,7 +116,7 @@ entry_edit_save(EntryEdit *self)
   if (self->unsaved_changes == FALSE)
     return;
 
-  buffer = gtk_text_view_get_buffer (self->text_view);
+  buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(self->md_editor));
   gtk_text_buffer_get_bounds (buffer, &start, &end);
   text = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
 
@@ -149,7 +152,7 @@ image_picker_cb (GObject *obj,
     g_autoptr(Image) image = image_picker_dialog_open_finish(image_picker, res);
     if (image != NULL) {
         g_print ("Adding image named '%s' from path '%s'\n", image->name, image->path);
-        GtkTextBuffer *text_buffer = gtk_text_view_get_buffer (entry_edit->text_view);
+        GtkTextBuffer *text_buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(entry_edit->md_editor));
         g_autofree char *md_image_link = g_strdup_printf ("![%s](<%s>)", image->name, image->path);
         gtk_text_buffer_insert_at_cursor (text_buffer, md_image_link, strlen (md_image_link));
     }
@@ -195,7 +198,7 @@ entry_edit_class_init (EntryEditClass *klass)
 
   gtk_widget_class_set_template_from_resource (widget_class,
       "/com/bjareholt/johan/simple-diary/ui/entry_edit.ui");
-  gtk_widget_class_bind_template_child (widget_class, EntryEdit, text_view);
+  gtk_widget_class_bind_template_child (widget_class, EntryEdit, entry_edit_viewport);
   gtk_widget_class_bind_template_child (widget_class, EntryEdit, add_image_button);
 }
 
@@ -207,6 +210,8 @@ entry_edit_init (EntryEdit *self)
   g_signal_connect (self, "destroy", (GCallback) entry_edit_save, NULL);
   g_signal_connect (self->add_image_button, "clicked",
       G_CALLBACK (add_image_button_clicked), self);
+  self->md_editor = GTK_MD_EDITOR(gtk_md_editor_new());
+  g_object_set(self->entry_edit_viewport, "child", self->md_editor, NULL);
 }
 
 GtkWidget *

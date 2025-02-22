@@ -197,6 +197,11 @@ save_image (ImagePicker *dialog)
   target_dir_absolute = utils_get_photos_folder (dialog->basename, TRUE);
   image_path_absolute = g_strdup_printf ("%s/%s.png", target_dir_absolute, image_name);
 
+  if (dialog->image_texture == NULL) {
+      utils_error_dialog (GTK_WIDGET (dialog), "No image selected\n");
+      return NULL;
+  }
+
   /* TODO: save as jpg instead of png
    * should be possible with gdk_texture_download together with gdkpixbuf somehow */
   if (!gdk_texture_save_to_png (dialog->image_texture, image_path_absolute)) {

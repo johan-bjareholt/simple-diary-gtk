@@ -12,7 +12,6 @@ error_dialog_cb (AdwMessageDialog *dialog,
                  GAsyncResult     *result,
                  gpointer          user_data)
 {
-  gtk_window_destroy (GTK_WINDOW (dialog));
 }
 
 void

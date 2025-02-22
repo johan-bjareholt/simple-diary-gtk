@@ -33,6 +33,7 @@ Simple and lightweight diary app.
 - meson
 - GTK4
 - gtkmdview
+- gtkmdeditor
 - md4c
 
 ### Building

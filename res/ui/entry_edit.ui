@@ -5,16 +5,8 @@
   <template class="EntryEdit" parent="GtkBox">
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkScrolledWindow">
+      <object class="GtkScrolledWindow" id="entry_edit_viewport">
         <property name="vexpand">1</property>
-        <property name="child">
-          <object class="GtkTextView" id="text_view">
-            <property name="editable">1</property>
-            <property name="wrap-mode">word</property>
-            <property name="input-hints">GTK_INPUT_HINT_SPELLCHECK | GTK_INPUT_HINT_WORD_COMPLETION | GTK_INPUT_HINT_EMOJI </property>
-            <property name="monospace">1</property>
-          </object>
-        </property>
       </object>
     </child>
     <child>
