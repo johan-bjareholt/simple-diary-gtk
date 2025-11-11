@@ -86,7 +86,11 @@ open_file_cb(GObject* source_object, GAsyncResult* res, gpointer user_data)
       return;
     }
 
+// TODO: gdb_texture_new_for_pixbuf is deprecated
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     texture = gdk_texture_new_for_pixbuf (pixbuf);
+#pragma GCC diagnostic pop
     if (dialog->image_texture != NULL) {
       g_object_unref (dialog->image_texture);
     }

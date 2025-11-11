@@ -49,7 +49,11 @@ about_button_pressed (GtkWidget *widget, gpointer user_data)
     return TRUE;
   }
 
+// TODO: gdb_texture_new_for_pixbuf is deprecated
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   icon_texture = gdk_texture_new_for_pixbuf (icon_pixbuf);
+#pragma GCC diagnostic pop
 
   gtk_show_about_dialog (NULL,
                          "program-name", "Simple Diary",
