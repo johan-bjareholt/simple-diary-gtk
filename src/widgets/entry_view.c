@@ -1,4 +1,4 @@
-#include <gtkmdview.h>
+#include <gtkmdeditor/gtkmdviewer.h>
 
 #include "entry_view.h"
 #include "window.h"
@@ -148,7 +148,7 @@ entry_view_load_md (EntryView *self)
 
   text_md = entry_read (self->entry, &err);
 
-  self->md_view = gtk_md_view_new (text_md, folder);
+  self->md_view = gtk_md_viewer_new_with_img_prefix(text_md, folder);
 
   gtk_viewport_set_child (GTK_VIEWPORT (self->md_viewport), self->md_view);
 
@@ -159,7 +159,7 @@ entry_view_load_md (EntryView *self)
 static void
 entry_view_init (EntryView *self)
 {
-  g_type_ensure (GTK_TYPE_MD_VIEW);
+  g_type_ensure (GTK_TYPE_MD_VIEWER);
 
   gtk_widget_init_template (GTK_WIDGET (self));
 

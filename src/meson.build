@@ -25,7 +25,6 @@ diary_deps = [
   gtk_dep,
   adwaita_dep,
   gdkpixbuf_dep,
-  gtkmdview_dep,
   gtkmdeditor_dep,
 ]
 
