@@ -1,5 +1,6 @@
 #include <gtk/gtk.h>
 
+#include "utils.h"
 #include "widgets/entry_rename_dialog.h"
 
 struct _EntryRenameDialog
@@ -60,6 +61,10 @@ dialog_response (GtkEntry *entry,
     GTask *task = G_TASK (user_data);
     EntryRenameDialog *self = DIARY_ENTRY_RENAME_DIALOG (g_task_get_task_data (task));
     gchar *text = entry_rename_dialog_get_name (self);
+    if (strchr(text, '.') != NULL || strchr(text, '/') != NULL) {
+        utils_error_dialog(GTK_WIDGET(entry), "Slashes and dots are not allowed in titles");
+        return;
+    }
     g_task_return_pointer (task, text, g_free);
 }
 
