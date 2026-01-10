@@ -6,3 +6,7 @@ mod entry_name_dialog;
 mod entry_name_dialog_bindings;
 mod entry_edit;
 mod entry_edit_bindings;
+mod entry_view;
+mod entry_view_bindings;
+mod entry_delete_dialog;
+mod entry_delete_dialog_bindings;

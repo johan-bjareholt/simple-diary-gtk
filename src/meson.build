@@ -8,10 +8,8 @@ diary_src = [
   'window.c',
 
   'widgets/entry_browser.c',
-  'widgets/entry_view.c',
   'widgets/entry_list.c',
   'widgets/entry_listing.c',
-  'widgets/entry_delete_dialog.c',
   'widgets/settings_view.c',
 ]
 
