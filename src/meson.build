@@ -16,7 +16,6 @@ diary_src = [
   'widgets/entry_name_dialog.c',
   'widgets/entry_rename_dialog.c',
   'widgets/entry_delete_dialog.c',
-  'widgets/image_picker.c',
   'widgets/settings_view.c',
 ]
 

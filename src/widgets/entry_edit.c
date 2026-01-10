@@ -142,20 +142,17 @@ entry_edit_constructed (GObject *object)
 }
 
 void
-image_picker_cb (GObject *obj,
-                 GAsyncResult *res,
+image_picker_cb (ImagePicker *image_picker,
+                 gchar *name,
+                 gchar *path,
                  gpointer user_data)
 {
-    ImagePicker *image_picker = DIARY_IMAGE_PICKER_DIALOG (obj);
     EntryEdit *entry_edit = DIARY_ENTRY_EDIT (user_data);
 
-    g_autoptr(Image) image = image_picker_dialog_open_finish(image_picker, res);
-    if (image != NULL) {
-        g_print ("Adding image named '%s' from path '%s'\n", image->name, image->path);
-        GtkTextBuffer *text_buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(entry_edit->md_editor));
-        g_autofree char *md_image_link = g_strdup_printf ("![%s](<%s>)", image->name, image->path);
-        gtk_text_buffer_insert_at_cursor (text_buffer, md_image_link, strlen (md_image_link));
-    }
+    g_print ("Adding image named '%s' from path '%s'\n", name, path);
+    GtkTextBuffer *text_buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(entry_edit->md_editor));
+    g_autofree char *md_image_link = g_strdup_printf ("![%s](<%s>)", name, path);
+    gtk_text_buffer_insert_at_cursor (text_buffer, md_image_link, strlen (md_image_link));
 }
 
 static gboolean
@@ -169,7 +166,8 @@ add_image_button_clicked(GtkButton *button, gpointer user_data)
   g_object_get (entry_edit->entry, "basename", &basename, NULL);
 
   ImagePicker *image_picker = image_picker_dialog_new (basename);
-  image_picker_dialog_open (image_picker, window, image_picker_cb, entry_edit);
+  g_signal_connect (image_picker, "image-selected", G_CALLBACK (image_picker_cb), entry_edit);
+  image_picker_dialog_open (image_picker, window);
 
   return TRUE;
 }
