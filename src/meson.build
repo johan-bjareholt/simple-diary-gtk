@@ -12,7 +12,6 @@ diary_src = [
   'widgets/entry_edit.c',
   'widgets/entry_list.c',
   'widgets/entry_listing.c',
-  'widgets/entry_name_dialog.c',
   'widgets/entry_delete_dialog.c',
   'widgets/settings_view.c',
 ]
