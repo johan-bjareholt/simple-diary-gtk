@@ -65,20 +65,14 @@ edit_button_clicked (GtkButton *button, gpointer user_data)
 }
 
 void
-rename_cb (GObject *obj,
-           GAsyncResult *res,
+rename_cb (EntryRenameDialog *dialog,
+           gchar *name,
            gpointer user_data)
 {
-    EntryRenameDialog *dialog = DIARY_ENTRY_RENAME_DIALOG (obj);
     Entry *entry = DIARY_ENTRY (user_data);
-
-    g_autofree gchar *name = entry_rename_dialog_open_finish(dialog, res);
-    if (name != NULL) {
-        // TODO: check if name contains dots or slashes
-        g_autofree gchar *name_with_extension = g_strdup_printf ("%s.md", name);
-        g_print ("Renaming entry to '%s'\n", name_with_extension);
-        entry_rename_file (entry, name_with_extension);
-    }
+    g_autofree gchar *name_with_extension = g_strdup_printf ("%s.md", name);
+    g_print ("Renaming entry to '%s'\n", name_with_extension);
+    entry_rename_file (entry, name_with_extension);
 }
 
 static gboolean
@@ -93,8 +87,8 @@ rename_button_clicked (GtkButton *button, gpointer user_data)
   g_object_get (self->entry, "basename", &basename, NULL);
 
   dialog = entry_rename_dialog_new (basename);
-
-  entry_rename_dialog_open(DIARY_ENTRY_RENAME_DIALOG (dialog), window, rename_cb, self->entry);
+  g_signal_connect (dialog, "confirmed", G_CALLBACK (rename_cb), self->entry);
+  entry_rename_dialog_open(DIARY_ENTRY_RENAME_DIALOG (dialog), window);
 
   g_free (basename);
 
