@@ -6,7 +6,6 @@ diary_src = [
   'main.c',
   'notification.c',
   'utils.c',
-  'settings.c',
   'window.c',
 
   'widgets/entry_browser.c',
