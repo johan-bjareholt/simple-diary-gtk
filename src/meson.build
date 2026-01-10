@@ -26,6 +26,7 @@ diary_deps = [
   adwaita_dep,
   gdkpixbuf_dep,
   gtkmdeditor_dep,
+  rust_dep,
 ]
 
 executable(

@@ -30,6 +30,8 @@ init(GtkApplication *app)
   gtk_widget_set_visible(GTK_WIDGET (window), TRUE);
 }
 
+#include "utils-rs.h"
+
 int
 main(int argc, char *argv[])
 {

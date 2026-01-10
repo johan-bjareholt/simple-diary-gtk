@@ -4,36 +4,23 @@
 #include <errno.h>
 
 #include "utils.h"
+#include "utils-rs.h"
 #include "window.h"
 #include "settings.h"
-
-static void
-error_dialog_cb (AdwMessageDialog *dialog,
-                 GAsyncResult     *result,
-                 gpointer          user_data)
-{
-}
 
 void
 utils_error_dialog(GtkWidget *parent, gchar *format, ...)
 {
-  AdwDialog *dialog;
   gchar *message;
   va_list args;
 
   va_start (args, format);
   g_vasprintf (&message, format, args);
-  g_printerr("Error: %s", message);
+  va_end (args);
 
-  dialog = adw_alert_dialog_new ("Error", message);
+  rs_utils_error_dialog (parent, message);
 
-
-  adw_alert_dialog_add_responses (ADW_ALERT_DIALOG (dialog),
-                                    "close", "_Close",
-                                    NULL);
-  adw_alert_dialog_set_response_appearance (ADW_ALERT_DIALOG (dialog), "close", ADW_RESPONSE_DESTRUCTIVE);
-
-  adw_alert_dialog_choose (ADW_ALERT_DIALOG (dialog), parent, NULL, (GAsyncReadyCallback) error_dialog_cb, NULL);
+  g_free (message);
 }
 
 gchar *

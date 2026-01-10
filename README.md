@@ -38,7 +38,7 @@ Simple and lightweight diary app.
 
 First install dependencies listed above
 
-Secondly run the following: meson build && ninja -C build
+Secondly run the following: cargo build && meson build && ninja -C build
 
 Executable will be built at build/src/simple-diary
 
