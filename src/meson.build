@@ -1,7 +1,6 @@
 diary_src = [
   gresources,
 
-  'entry.c',
   'headerbuttons.c',
   'main.c',
   'notification.c',
