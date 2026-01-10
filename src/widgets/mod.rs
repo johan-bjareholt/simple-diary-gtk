@@ -4,3 +4,5 @@ mod entry_rename_dialog;
 mod entry_rename_dialog_bindings;
 mod entry_name_dialog;
 mod entry_name_dialog_bindings;
+mod entry_edit;
+mod entry_edit_bindings;

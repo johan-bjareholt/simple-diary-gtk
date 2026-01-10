@@ -9,7 +9,6 @@ diary_src = [
 
   'widgets/entry_browser.c',
   'widgets/entry_view.c',
-  'widgets/entry_edit.c',
   'widgets/entry_list.c',
   'widgets/entry_listing.c',
   'widgets/entry_delete_dialog.c',
