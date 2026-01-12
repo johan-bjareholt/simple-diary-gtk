@@ -2,7 +2,7 @@ use gtk4::glib;
 use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
 use std::cell::RefCell;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 mod imp {
     use super::*;

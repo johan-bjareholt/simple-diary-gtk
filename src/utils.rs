@@ -70,13 +70,6 @@ pub fn get_photos_folder(
     }
 }
 
-/// Get the file extension from a filepath
-pub fn get_file_extension(filepath: &str) -> Option<&str> {
-    Path::new(filepath)
-        .extension()
-        .and_then(|ext| ext.to_str())
-}
-
 /// Apply the current color scheme to the application
 pub fn apply_color_scheme() {
     let color_scheme = crate::settings::get_color_scheme();

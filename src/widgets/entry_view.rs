@@ -6,7 +6,6 @@ use std::cell::RefCell;
 
 // FFI binding for GtkMdViewer
 unsafe extern "C" {
-    fn gtk_md_viewer_get_type() -> glib::ffi::GType;
     fn gtk_md_viewer_new_with_img_prefix(
         markdown: *const std::os::raw::c_char,
         img_prefix: *const std::os::raw::c_char,
@@ -62,25 +61,25 @@ mod imp {
 
         fn constructed(&self) {
             self.parent_constructed();
-            
+
             let obj = self.obj();
-            
+
             // Connect button signals
             self.edit_button.connect_clicked(glib::clone!(
                 #[weak] obj,
                 move |_| obj.edit_button_clicked()
             ));
-            
+
             self.rename_button.connect_clicked(glib::clone!(
                 #[weak] obj,
                 move |_| obj.rename_button_clicked()
             ));
-            
+
             self.delete_button.connect_clicked(glib::clone!(
                 #[weak] obj,
                 move |_| obj.delete_button_clicked()
             ));
-            
+
             // Reload markdown when widget is mapped
             obj.connect_map(|obj| {
                 obj.load_markdown();
@@ -106,30 +105,30 @@ impl EntryView {
 
     fn load_markdown(&self) {
         let imp = self.imp();
-        
+
         let entry_ref = imp.entry.borrow();
         let Some(entry) = entry_ref.as_ref() else {
             return;
         };
-        
+
         let Ok(text_md) = entry.read() else {
             return;
         };
-        
+
         let folder = entry.property::<Option<String>>("folder")
             .unwrap_or_default();
-        
+
         unsafe {
             use std::ffi::CString;
-            
+
             let text_c = CString::new(text_md).unwrap();
             let folder_c = CString::new(folder).unwrap();
-            
+
             let md_view_ptr = gtk_md_viewer_new_with_img_prefix(
                 text_c.as_ptr(),
                 folder_c.as_ptr(),
             );
-            
+
             let md_view: gtk4::Widget = glib::translate::from_glib_none(md_view_ptr);
             imp.md_view.replace(Some(md_view.clone()));
             imp.md_viewport.set_child(Some(&md_view));
@@ -141,11 +140,11 @@ impl EntryView {
         let Some(entry) = entry_ref.as_ref() else {
             return;
         };
-        
+
         let entry_edit = crate::widgets::entry_edit::EntryEdit::new(entry);
-        
+
         let window = self.root().and_downcast::<gtk4::Window>();
-        if let Some(window) = window {
+        if let Some(_window) = window {
             // Assuming there's a way to push view to the window
             // This might need to be exposed via FFI if DiaryWindow methods aren't available
             // For now, we'll need to call the C function
@@ -153,7 +152,7 @@ impl EntryView {
                 fn diary_window_get_instance() -> *mut gtk4::ffi::GtkWidget;
                 fn diary_window_push_view(window: *mut gtk4::ffi::GtkWidget, view: *mut gtk4::ffi::GtkWidget);
             }
-            
+
             unsafe {
                 let diary_window = diary_window_get_instance();
                 let view: gtk4::Widget = entry_edit.upcast();
@@ -167,17 +166,17 @@ impl EntryView {
         let Some(entry) = entry_ref.as_ref() else {
             return;
         };
-        
+
         let basename = entry.property::<Option<String>>("basename")
             .unwrap_or_default();
-        
+
         let window = self.root().and_downcast::<gtk4::Window>();
         let Some(window) = window else {
             return;
         };
-        
+
         let dialog = crate::widgets::entry_rename_dialog::EntryRenameDialog::new(&basename);
-        
+
         let entry_clone = entry.clone();
         dialog.connect_closure(
             "confirmed",
@@ -188,7 +187,7 @@ impl EntryView {
                 let _ = entry_clone.rename_file(&name_with_extension);
             }),
         );
-        
+
         dialog.open(&window);
     }
 
@@ -197,31 +196,31 @@ impl EntryView {
         let Some(entry) = entry_ref.as_ref() else {
             return;
         };
-        
+
         let window = self.root().and_downcast::<gtk4::Window>();
         let Some(window) = window else {
             return;
         };
-        
+
         let dialog = crate::widgets::entry_delete_dialog::EntryDeleteDialog::new();
-        
+
         let entry_clone = entry.clone();
         let self_weak = self.downgrade();
-        
+
         dialog.connect_closure(
             "confirmed",
             false,
             glib::closure_local!(move |_dialog: crate::widgets::entry_delete_dialog::EntryDeleteDialog| {
                 let Some(this) = self_weak.upgrade() else { return };
-                
+
                 // Emit deleted signal before deleting the entry
                 this.emit_by_name::<()>("deleted", &[&entry_clone]);
-                
+
                 // Delete the entry
                 let _ = entry_clone.delete();
             }),
         );
-        
+
         dialog.open(&window);
     }
 }

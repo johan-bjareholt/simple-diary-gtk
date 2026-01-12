@@ -1,5 +1,3 @@
-use std::ffi::CStr;
-use std::os::raw::c_char;
 use gtk4::glib;
 use gtk4::prelude::*;
 use glib::translate::{ToGlibPtr, FromGlibPtrNone, IntoGlib};

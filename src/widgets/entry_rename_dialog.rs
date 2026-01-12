@@ -1,7 +1,6 @@
 use gtk4::glib;
 use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
-use std::cell::RefCell;
 
 mod imp {
     use super::*;
@@ -25,11 +24,11 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
-            
+
             klass.install_action("dialog.confirm", None, move |obj, _, _| {
                 obj.handle_confirm();
             });
-            
+
             klass.install_action("dialog.cancel", None, move |obj, _, _| {
                 obj.handle_cancel();
             });
@@ -57,19 +56,19 @@ mod imp {
 
         fn constructed(&self) {
             self.parent_constructed();
-            
+
             let obj = self.obj();
-            
+
             self.button_ok.connect_clicked(glib::clone!(
                 #[weak] obj,
                 move |_| WidgetExt::activate_action(&obj, "dialog.confirm", None).unwrap()
             ));
-            
+
             self.button_cancel.connect_clicked(glib::clone!(
                 #[weak] obj,
                 move |_| WidgetExt::activate_action(&obj, "dialog.cancel", None).unwrap()
             ));
-            
+
             self.name_entry.connect_activate(glib::clone!(
                 #[weak] obj,
                 move |_| WidgetExt::activate_action(&obj, "dialog.confirm", None).unwrap()
@@ -90,10 +89,10 @@ glib::wrapper! {
 impl EntryRenameDialog {
     pub fn new(basename: &str) -> Self {
         let obj: Self = glib::Object::new();
-        
+
         let buffer = gtk4::EntryBuffer::new(Some(basename));
         obj.imp().name_entry.set_buffer(&buffer);
-        
+
         obj
     }
 
@@ -113,11 +112,11 @@ impl EntryRenameDialog {
 
     fn handle_confirm(&self) {
         let name = self.get_name();
-        
+
         if !self.validate_name(&name) {
             return;
         }
-        
+
         self.emit_by_name::<()>("confirmed", &[&name]);
         self.close();
     }
