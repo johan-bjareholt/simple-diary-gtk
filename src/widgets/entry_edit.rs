@@ -3,11 +3,6 @@ use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
 use std::cell::{Cell, RefCell};
 
-// FFI binding for GtkMdEditor
-unsafe extern "C" {
-    fn gtk_md_editor_new() -> *mut gtk4::ffi::GtkWidget;
-}
-
 mod imp {
     use super::*;
 
@@ -71,26 +66,23 @@ mod imp {
 
         fn constructed(&self) {
             self.parent_constructed();
-            
+
             let obj = self.obj();
-            
+
             // Create markdown editor
-            let md_editor_ptr = unsafe { gtk_md_editor_new() };
-            let md_editor: gtk4::Widget = unsafe { 
-                glib::translate::from_glib_none(md_editor_ptr) 
-            };
-            self.md_editor.replace(Some(md_editor.clone()));
+            let md_editor = gtkmdeditor::GtkMdEditor::new();
+            self.md_editor.replace(Some(md_editor.clone().into()));
             self.entry_edit_viewport.set_child(Some(&md_editor));
-            
+
             // Read entry content
             obj.read_entry();
-            
+
             // Connect signals
             self.add_image_button.connect_clicked(glib::clone!(
                 #[weak] obj,
                 move |_| obj.add_image_button_clicked()
             ));
-            
+
             obj.connect_destroy(|obj| {
                 obj.save_entry();
             });
@@ -103,7 +95,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct EntryEdit(ObjectSubclass<imp::EntryEdit>)
-        @extends gtk4::Box, gtk4::Widget;
+        @extends gtk4::Box, gtk4::Widget,
+        @implements gtk4::ConstraintTarget, gtk4::Buildable, gtk4::Accessible;
 }
 
 impl EntryEdit {
@@ -115,17 +108,17 @@ impl EntryEdit {
 
     fn read_entry(&self) {
         let imp = self.imp();
-        
+
         let entry_ref = imp.entry.borrow();
         let Some(entry) = entry_ref.as_ref() else {
             return;
         };
-        
+
         let editor_ref = imp.md_editor.borrow();
         let Some(md_editor) = editor_ref.as_ref() else {
             return;
         };
-        
+
         match entry.read() {
             Ok(body) => {
                 let text_view = md_editor.downcast_ref::<gtk4::TextView>()
@@ -141,54 +134,54 @@ impl EntryEdit {
 
     pub fn save_entry(&self) {
         let imp = self.imp();
-        
+
         if !imp.unsaved_changes.get() {
             return;
         }
-        
+
         let entry_ref = imp.entry.borrow();
         let Some(entry) = entry_ref.as_ref() else {
             return;
         };
-        
+
         let editor_ref = imp.md_editor.borrow();
         let Some(md_editor) = editor_ref.as_ref() else {
             return;
         };
-        
+
         let text_view = md_editor.downcast_ref::<gtk4::TextView>()
             .expect("md_editor is not a TextView");
         let buffer = text_view.buffer();
         let start = buffer.start_iter();
         let end = buffer.end_iter();
         let text = buffer.text(&start, &end, false);
-        
+
         if let Err(e) = entry.write(&text) {
             eprintln!("Failed to save entry: {}", e);
             return;
         }
-        
+
         imp.unsaved_changes.set(false);
     }
 
     fn add_image_button_clicked(&self) {
         let imp = self.imp();
-        
+
         let entry_ref = imp.entry.borrow();
         let Some(entry) = entry_ref.as_ref() else {
             return;
         };
-        
+
         let basename = entry.property::<Option<String>>("basename")
             .unwrap_or_default();
-        
+
         let window = self.root().and_downcast::<gtk4::Window>();
         let Some(window) = window else {
             return;
         };
-        
+
         let image_picker = crate::widgets::image_picker::ImagePicker::new(&basename);
-        
+
         image_picker.connect_closure(
             "image-selected",
             false,
@@ -199,19 +192,19 @@ impl EntryEdit {
                 }
             ),
         );
-        
+
         image_picker.open(&window);
     }
 
     fn add_image(&self, name: &str, path: &str) {
         println!("Adding image named '{}' from path '{}'", name, path);
-        
+
         let imp = self.imp();
         let editor_ref = imp.md_editor.borrow();
         let Some(md_editor) = editor_ref.as_ref() else {
             return;
         };
-        
+
         let text_view = md_editor.downcast_ref::<gtk4::TextView>()
             .expect("md_editor is not a TextView");
         let buffer = text_view.buffer();

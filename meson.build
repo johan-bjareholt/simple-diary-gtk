@@ -7,7 +7,6 @@ gnome = import('gnome')
 gtk_dep = dependency('gtk4', version : '>=4.10')
 adwaita_dep = dependency('libadwaita-1', version : '>=1.5')
 gdkpixbuf_dep = dependency('gdk-pixbuf-2.0', version : '>=2.0')
-gtkmdeditor_dep = dependency('gtkmdeditor')
 rust_dep = declare_dependency(
   link_args: [meson.source_root() / 'target/debug/libsimple_diary.a'],
   include_directories : 'src'

@@ -32,7 +32,7 @@ Simple and lightweight diary app.
 ### Dependencies
 - meson
 - GTK4
-- gtkmdeditor
+- libadwaita
 
 ### Building
 

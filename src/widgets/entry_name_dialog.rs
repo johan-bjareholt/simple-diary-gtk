@@ -32,11 +32,11 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
-            
+
             klass.install_action("dialog.confirm", None, move |obj, _, _| {
                 obj.handle_confirm();
             });
-            
+
             klass.install_action("dialog.cancel", None, move |obj, _, _| {
                 obj.handle_cancel();
             });
@@ -64,33 +64,33 @@ mod imp {
 
         fn constructed(&self) {
             self.parent_constructed();
-            
+
             let obj = self.obj();
-            
+
             // Update date label initially
             obj.update_date_label();
-            
+
             // Connect signals
             self.date_button.connect_clicked(glib::clone!(
                 #[weak(rename_to = this)] obj,
                 move |_| this.imp().date_popover.set_visible(true)
             ));
-            
+
             self.date_calendar.connect_day_selected(glib::clone!(
                 #[weak(rename_to = this)] obj,
                 move |_| this.update_date_label()
             ));
-            
+
             self.button_ok.connect_clicked(glib::clone!(
                 #[weak] obj,
                 move |_| WidgetExt::activate_action(&obj, "dialog.confirm", None).unwrap()
             ));
-            
+
             self.button_cancel.connect_clicked(glib::clone!(
                 #[weak] obj,
                 move |_| WidgetExt::activate_action(&obj, "dialog.cancel", None).unwrap()
             ));
-            
+
             self.name_entry.connect_activate(glib::clone!(
                 #[weak] obj,
                 move |_| WidgetExt::activate_action(&obj, "dialog.confirm", None).unwrap()
@@ -105,30 +105,31 @@ mod imp {
 glib::wrapper! {
     pub struct EntryNameDialog(ObjectSubclass<imp::EntryNameDialog>)
         @extends gtk4::Window, gtk4::Widget,
-        @implements gtk4::gio::ActionGroup, gtk4::gio::ActionMap;
+        @implements gtk4::gio::ActionGroup, gtk4::gio::ActionMap, gtk4::Accessible, gtk4::Actionable,
+                    gtk4::Buildable, gtk4::ConstraintTarget, gtk4::ShortcutManager, gtk4::Root, gtk4::Native;
 }
 
 impl EntryNameDialog {
     pub fn new() -> Self {
         let obj: Self = glib::Object::new();
-        
+
         let buffer = gtk4::EntryBuffer::new(Some("Title"));
         obj.imp().name_entry.set_buffer(&buffer);
-        
+
         obj
     }
 
     fn update_date_label(&self) {
         let imp = self.imp();
         let calendar = &imp.date_calendar;
-        
+
         let date = calendar.date();
-        let date_str = format!("{:04}-{:02}-{:02}", 
-            date.year(), 
-            date.month() as i32, 
+        let date_str = format!("{:04}-{:02}-{:02}",
+            date.year(),
+            date.month() as i32,
             date.day_of_month()
         );
-        
+
         imp.date_label.set_label(&date_str);
     }
 
@@ -136,7 +137,7 @@ impl EntryNameDialog {
         let imp = self.imp();
         let title = imp.name_entry.text();
         let date = imp.date_label.text();
-        
+
         format!("{} - {}", date, title)
     }
 
@@ -151,11 +152,11 @@ impl EntryNameDialog {
 
     fn handle_confirm(&self) {
         let name = self.get_name();
-        
+
         if !self.validate_name(&name) {
             return;
         }
-        
+
         self.emit_by_name::<()>("confirmed", &[&name]);
         self.close();
     }

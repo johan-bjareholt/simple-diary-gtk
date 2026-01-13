@@ -22,11 +22,11 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
-            
+
             klass.install_action("dialog.confirm", None, move |obj, _, _| {
                 obj.handle_confirm();
             });
-            
+
             klass.install_action("dialog.cancel", None, move |obj, _, _| {
                 obj.handle_cancel();
             });
@@ -53,14 +53,14 @@ mod imp {
 
         fn constructed(&self) {
             self.parent_constructed();
-            
+
             let obj = self.obj();
-            
+
             self.button_ok.connect_clicked(glib::clone!(
                 #[weak] obj,
                 move |_| WidgetExt::activate_action(&obj, "dialog.confirm", None).unwrap()
             ));
-            
+
             self.button_cancel.connect_clicked(glib::clone!(
                 #[weak] obj,
                 move |_| WidgetExt::activate_action(&obj, "dialog.cancel", None).unwrap()
@@ -75,7 +75,8 @@ mod imp {
 glib::wrapper! {
     pub struct EntryDeleteDialog(ObjectSubclass<imp::EntryDeleteDialog>)
         @extends gtk4::Window, gtk4::Widget,
-        @implements gtk4::gio::ActionGroup, gtk4::gio::ActionMap;
+        @implements gtk4::gio::ActionGroup, gtk4::gio::ActionMap, gtk4::Accessible, gtk4::Actionable,
+                    gtk4::Buildable, gtk4::ConstraintTarget, gtk4::ShortcutManager, gtk4::Root, gtk4::Native;
 }
 
 impl EntryDeleteDialog {

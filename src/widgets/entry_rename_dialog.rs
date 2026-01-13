@@ -83,7 +83,8 @@ mod imp {
 glib::wrapper! {
     pub struct EntryRenameDialog(ObjectSubclass<imp::EntryRenameDialog>)
         @extends gtk4::Window, gtk4::Widget,
-        @implements gtk4::gio::ActionGroup, gtk4::gio::ActionMap;
+        @implements gtk4::gio::ActionGroup, gtk4::gio::ActionMap, gtk4::Accessible, gtk4::Actionable,
+                    gtk4::Buildable, gtk4::ConstraintTarget, gtk4::ShortcutManager, gtk4::Root, gtk4::Native;
 }
 
 impl EntryRenameDialog {

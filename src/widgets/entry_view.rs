@@ -93,7 +93,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct EntryView(ObjectSubclass<imp::EntryView>)
-        @extends gtk4::Box, gtk4::Widget;
+        @extends gtk4::Box, gtk4::Widget,
+        @implements gtk4::ConstraintTarget, gtk4::Buildable, gtk4::Accessible;
 }
 
 impl EntryView {

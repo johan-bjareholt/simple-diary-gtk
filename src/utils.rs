@@ -15,7 +15,7 @@ pub fn error_dialog<P: IsA<gtk4::Widget>>(parent: &P, message: &str) {
     dialog.set_response_appearance("close", adw::ResponseAppearance::Destructive);
 
     dialog.choose(
-        parent,
+        Some(parent),
         gtk4::gio::Cancellable::NONE,
         |_result| {
             // Empty callback, same as the C version
