@@ -145,8 +145,14 @@ gboolean
 back_button_pressed (GtkWidget *back_button, gpointer user_data)
 {
   DiaryWindow *self = DIARY_WINDOW (user_data);
-  GtkWidget *widget = GTK_WIDGET (g_list_last (self->view_stack)->data);
+  GList *last_view = g_list_last (self->view_stack);
+  GtkWidget *widget;
   HeaderButtonsControlInterface *iface;
+
+  if (last_view == NULL) {
+      return FALSE;
+  }
+  widget = GTK_WIDGET (last_view->data);
 
   iface = g_type_interface_peek (G_OBJECT_GET_CLASS (widget), DIARY_TYPE_HEADER_BUTTONS);
   if (iface) {
@@ -162,8 +168,14 @@ gboolean
 new_button_pressed (GtkWidget *back_button, gpointer user_data)
 {
   DiaryWindow *self = DIARY_WINDOW (user_data);
-  GtkWidget *widget = GTK_WIDGET (g_list_last (self->view_stack)->data);
+  GList *last_view = g_list_last (self->view_stack);
+  GtkWidget *widget;
   HeaderButtonsControlInterface *iface;
+
+  if (last_view == NULL) {
+      return FALSE;
+  }
+  widget = GTK_WIDGET (last_view->data);
 
   iface = g_type_interface_peek (G_OBJECT_GET_CLASS (widget), DIARY_TYPE_HEADER_BUTTONS);
   if (iface) {

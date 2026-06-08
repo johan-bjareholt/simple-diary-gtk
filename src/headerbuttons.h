@@ -2,8 +2,8 @@
 
 #include <gtk/gtk.h>
 
-#define DIARY_TYPE_HEADER_BUTTONS diary_header_buttons_control_get_type ()
-G_DECLARE_INTERFACE (HeaderButtonsControl, diary_header_buttons_control, DIARY, HEADER_BUTTONS, GObject)
+#define DIARY_TYPE_HEADER_BUTTONS header_buttons_control_get_type ()
+G_DECLARE_INTERFACE (HeaderButtonsControlInterface, header_buttons_control, , HEADER_BUTTONS_CONTROL, GObject)
 
 struct _HeaderButtonsControlInterface
 {
