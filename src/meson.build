@@ -24,6 +24,5 @@ executable(
   'simple-diary', diary_src,
   dependencies: diary_deps,
   install: true,
-  gui_app: true,
   link_args: '-rdynamic',
 )
