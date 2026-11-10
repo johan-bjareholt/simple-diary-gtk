@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <template class="EntryList" parent="GtkScrolledWindow">
+  <template class="EntryList" parent="GtkBox">
+    <property name="orientation">vertical</property>
+    <property name="hexpand">true</property>
+    <property name="vexpand">true</property>
     <child>
-      <object class="GtkListBox" id="entry_list_box">
-        <style>
-          <class name="navigation-sidebar"/>
-        </style>
+      <object class="GtkScrolledWindow">
+        <property name="hexpand">true</property>
+        <property name="vexpand">true</property>
         <child>
-          <placeholder/>
+          <object class="GtkListBox" id="entry_list_box">
+            <style>
+              <class name="navigation-sidebar"/>
+            </style>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
         </child>
       </object>
     </child>

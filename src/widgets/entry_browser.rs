@@ -6,7 +6,7 @@ use std::cell::RefCell;
 use crate::headerbuttons::{HeaderButtonsControl, HeaderButtonsHandler};
 use crate::impl_header_buttons_control;
 use crate::window_bindings;
-use super::entry_list_bindings as entry_list;
+use super::entry_list::EntryList;
 
 impl_header_buttons_control!(EntryBrowser, imp::EntryBrowser);
 
@@ -23,7 +23,7 @@ mod imp {
         #[template_child]
         pub content_box: TemplateChild<gtk4::Box>,
 
-        pub entry_list: RefCell<Option<gtk4::Widget>>,
+        pub entry_list: RefCell<Option<EntryList>>,
         pub content_box_child: RefCell<Option<gtk4::Widget>>,
 
         /* from header_buttons_control */
@@ -53,7 +53,7 @@ mod imp {
 
             let obj = self.obj();
 
-            let list = entry_list::new();
+            let list = EntryList::new();
 
             let obj_weak = obj.downgrade();
             list.clone().upcast::<glib::Object>().connect_closure(
@@ -89,7 +89,7 @@ impl EntryBrowser {
         glib::Object::new()
     }
 
-    fn entry_list(&self) -> gtk4::Widget {
+    fn entry_list(&self) -> EntryList {
         self.imp().entry_list.borrow().clone().expect("entry list not initialized")
     }
 
@@ -143,7 +143,7 @@ impl EntryBrowser {
     fn entry_view_deleted(&self, entry: &crate::entry::Entry) {
         self.set_content(None);
 
-        let removed = entry_list::remove(&self.entry_list(), entry);
+        let removed = self.entry_list().remove(entry);
         assert!(removed, "entry was not found in the entry list");
     }
 
@@ -160,19 +160,19 @@ impl EntryBrowser {
 
     fn entry_name_cb(&self, name: String) {
         let filename = format!("{}.md", name);
-        let entry_list_widget = self.entry_list();
+        let entry_list = self.entry_list();
 
-        let (entry, row) = match entry_list::find(&entry_list_widget, &filename) {
+        let (entry, row) = match entry_list.find(&filename) {
             Some(row) => {
                 let listing = row.child().expect("entry list row has no child");
-                let entry = entry_list::listing_get_entry(&listing);
-                (entry, row)
+                let listing = listing.downcast::<super::entry_listing::EntryListing>().expect("Not an EntryListing");
+                (listing.entry(), row)
             }
             None => {
                 let folder = crate::utils::get_diary_folder().expect("failed to get diary folder");
                 let entry = crate::entry::Entry::new(&folder, &filename);
-                entry_list::add_entry(&entry_list_widget, &entry);
-                let row = entry_list::find(&entry_list_widget, &filename)
+                entry_list.add_entry(&entry);
+                let row = entry_list.find(&filename)
                     .expect("new entry not found in list");
                 (entry, row)
             }
@@ -182,7 +182,7 @@ impl EntryBrowser {
         let entry_view = crate::widgets::entry_view::EntryView::new(&entry);
         self.connect_entry_view_deleted(&entry_view);
 
-        entry_list::focus(&entry_list_widget, &row);
+        entry_list.focus(&row);
         window_bindings::push_view(&entry_edit.upcast::<gtk4::Widget>());
     }
 }
@@ -235,6 +235,6 @@ impl HeaderButtonsHandler for EntryBrowser {
 
     fn on_back_pressed(&self) {
         self.set_content(None);
-        entry_list::unfocus(&self.entry_list());
+        self.entry_list().unfocus();
     }
 }
