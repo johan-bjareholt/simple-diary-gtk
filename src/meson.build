@@ -8,7 +8,6 @@ diary_src = [
   'window.c',
 
   'widgets/entry_list.c',
-  'widgets/entry_listing.c',
   'widgets/settings_view.c',
 ]
 

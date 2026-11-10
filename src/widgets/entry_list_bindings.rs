@@ -19,7 +19,6 @@ unsafe extern "C" {
         list: *mut gtk4::ffi::GtkWidget,
         entry: *mut glib::gobject_ffi::GObject,
     ) -> glib::ffi::gboolean;
-    fn entry_listing_get_entry(listing: *mut gtk4::ffi::GtkWidget) -> *mut glib::gobject_ffi::GObject;
 }
 
 fn entry_ptr(entry: &crate::entry::Entry) -> *mut glib::gobject_ffi::GObject {
@@ -32,10 +31,8 @@ pub fn new() -> gtk4::Widget {
 }
 
 pub fn add_entry(list: &gtk4::Widget, entry: &crate::entry::Entry) {
-    // The C EntryListing stores the entry as a raw pointer without taking a
-    // reference, so transfer a strong reference to keep it alive.
-    let entry_ptr = entry.upcast_ref::<glib::Object>().to_glib_full();
-    unsafe { entry_list_add_entry(list.to_glib_none().0, entry_ptr) }
+    // The EntryListing takes its own reference via its "entry" property
+    unsafe { entry_list_add_entry(list.to_glib_none().0, entry_ptr(entry)) }
 }
 
 pub fn focus(list: &gtk4::Widget, row: &gtk4::ListBoxRow) {
@@ -64,7 +61,8 @@ pub fn remove(list: &gtk4::Widget, entry: &crate::entry::Entry) -> bool {
 
 /// Get the entry shown by an entry listing widget
 pub fn listing_get_entry(listing: &gtk4::Widget) -> crate::entry::Entry {
-    let entry_ptr = unsafe { entry_listing_get_entry(listing.to_glib_none().0) };
-    let obj: glib::Object = unsafe { from_glib_none(entry_ptr) };
-    obj.downcast::<crate::entry::Entry>().expect("Not an Entry")
+    listing
+        .downcast_ref::<super::entry_listing::EntryListing>()
+        .expect("Not an EntryListing")
+        .entry()
 }
