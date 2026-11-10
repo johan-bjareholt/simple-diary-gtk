@@ -1,7 +1,6 @@
 use gtk4::glib;
 use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
-use glib::translate::ToGlibPtr;
 use std::cell::RefCell;
 
 // FFI binding for GtkMdViewer
@@ -145,20 +144,8 @@ impl EntryView {
         let entry_edit = crate::widgets::entry_edit::EntryEdit::new(entry);
 
         let window = self.root().and_downcast::<gtk4::Window>();
-        if let Some(_window) = window {
-            // Assuming there's a way to push view to the window
-            // This might need to be exposed via FFI if DiaryWindow methods aren't available
-            // For now, we'll need to call the C function
-            unsafe extern "C" {
-                fn diary_window_get_instance() -> *mut gtk4::ffi::GtkWidget;
-                fn diary_window_push_view(window: *mut gtk4::ffi::GtkWidget, view: *mut gtk4::ffi::GtkWidget);
-            }
-
-            unsafe {
-                let diary_window = diary_window_get_instance();
-                let view: gtk4::Widget = entry_edit.upcast();
-                diary_window_push_view(diary_window, view.to_glib_none().0);
-            }
+        if window.is_some() {
+            crate::window_bindings::push_view(&entry_edit.upcast::<gtk4::Widget>());
         }
     }
 

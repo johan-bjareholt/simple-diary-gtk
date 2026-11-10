@@ -2,7 +2,7 @@ use glib::subclass::prelude::*;
 use glib::translate::*;
 use gtk4::prelude::*;
 
-mod ffi {
+pub(crate) mod ffi {
     use super::*;
 
     #[repr(C)]
@@ -76,4 +76,105 @@ mod iface {
 
 glib::wrapper! {
     pub struct HeaderButtonsControl(ObjectInterface<iface::HeaderButtonsControl>);
+}
+
+/// Trait implemented by widgets that want to handle header button events.
+/// Use together with [`impl_header_buttons_control!`].
+pub trait HeaderButtonsHandler {
+    /// Called when entering the view
+    fn on_enter(&self, new_button: &gtk4::Button, back_button: &gtk4::Button, settings_button: &gtk4::Button);
+    /// Called when leaving the view (either back or forward to some new page)
+    fn on_leave(&self, new_button: &gtk4::Button, back_button: &gtk4::Button, settings_button: &gtk4::Button);
+    /// Called when pressing new
+    fn on_new_pressed(&self);
+    /// Called when pressing back
+    fn on_back_pressed(&self);
+}
+
+/// Implements the `HeaderButtonsControl` interface for a widget, wiring the
+/// interface vfuncs to the widget's [`HeaderButtonsHandler`] implementation.
+///
+/// Usage (from the widget's module, where `imp` is the widget's `imp` module):
+/// ```ignore
+/// impl_header_buttons_control!(MyWidget, imp::MyWidget);
+/// ```
+/// and declare `type Interfaces = (HeaderButtonsControl,);` in `ObjectSubclass`.
+#[macro_export]
+macro_rules! impl_header_buttons_control {
+    ($widget:ty, $imp:ty) => {
+        mod header_buttons_iface_glue {
+            use super::*;
+            use gtk4::glib::translate::{from_glib_borrow, Borrowed};
+
+            pub(crate) extern "C" fn on_enter(
+                widget: *mut gtk4::ffi::GtkWidget,
+                new_button: *mut gtk4::ffi::GtkButton,
+                back_button: *mut gtk4::ffi::GtkButton,
+                settings_button: *mut gtk4::ffi::GtkButton,
+            ) {
+                let widget_rs: Borrowed<gtk4::Widget> = unsafe { from_glib_borrow(widget) };
+                let new_button_rs: Borrowed<gtk4::Button> = unsafe { from_glib_borrow(new_button) };
+                let back_button_rs: Borrowed<gtk4::Button> = unsafe { from_glib_borrow(back_button) };
+                let settings_button_rs: Borrowed<gtk4::Button> = unsafe { from_glib_borrow(settings_button) };
+
+                if let Some(obj) = widget_rs.dynamic_cast_ref::<$widget>() {
+                    <$widget as crate::headerbuttons::HeaderButtonsHandler>::on_enter(
+                        obj,
+                        &new_button_rs,
+                        &back_button_rs,
+                        &settings_button_rs,
+                    );
+                }
+            }
+
+            pub(crate) extern "C" fn on_leave(
+                widget: *mut gtk4::ffi::GtkWidget,
+                new_button: *mut gtk4::ffi::GtkButton,
+                back_button: *mut gtk4::ffi::GtkButton,
+                settings_button: *mut gtk4::ffi::GtkButton,
+            ) {
+                let widget_rs: Borrowed<gtk4::Widget> = unsafe { from_glib_borrow(widget) };
+                let new_button_rs: Borrowed<gtk4::Button> = unsafe { from_glib_borrow(new_button) };
+                let back_button_rs: Borrowed<gtk4::Button> = unsafe { from_glib_borrow(back_button) };
+                let settings_button_rs: Borrowed<gtk4::Button> = unsafe { from_glib_borrow(settings_button) };
+
+                if let Some(obj) = widget_rs.dynamic_cast_ref::<$widget>() {
+                    <$widget as crate::headerbuttons::HeaderButtonsHandler>::on_leave(
+                        obj,
+                        &new_button_rs,
+                        &back_button_rs,
+                        &settings_button_rs,
+                    );
+                }
+            }
+
+            pub(crate) extern "C" fn on_new_pressed(widget: *mut gtk4::ffi::GtkWidget) {
+                let widget_rs: Borrowed<gtk4::Widget> = unsafe { from_glib_borrow(widget) };
+
+                if let Some(obj) = widget_rs.dynamic_cast_ref::<$widget>() {
+                    <$widget as crate::headerbuttons::HeaderButtonsHandler>::on_new_pressed(obj);
+                }
+            }
+
+            pub(crate) extern "C" fn on_back_pressed(widget: *mut gtk4::ffi::GtkWidget) {
+                let widget_rs: Borrowed<gtk4::Widget> = unsafe { from_glib_borrow(widget) };
+
+                if let Some(obj) = widget_rs.dynamic_cast_ref::<$widget>() {
+                    <$widget as crate::headerbuttons::HeaderButtonsHandler>::on_back_pressed(obj);
+                }
+            }
+        }
+
+        unsafe impl gtk4::glib::subclass::prelude::IsImplementable<$imp>
+            for crate::headerbuttons::HeaderButtonsControl
+        {
+            fn interface_init(iface: &mut gtk4::glib::Interface<Self>) {
+                let iface = iface.as_mut();
+                iface.on_enter = header_buttons_iface_glue::on_enter;
+                iface.on_leave = header_buttons_iface_glue::on_leave;
+                iface.on_new_pressed = header_buttons_iface_glue::on_new_pressed;
+                iface.on_back_pressed = header_buttons_iface_glue::on_back_pressed;
+            }
+        }
+    };
 }

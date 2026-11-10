@@ -1,3 +1,6 @@
+mod entry_browser;
+mod entry_browser_bindings;
+mod entry_list_bindings;
 mod image_picker;
 mod image_picker_bindings;
 mod entry_rename_dialog;

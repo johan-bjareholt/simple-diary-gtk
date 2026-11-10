@@ -3,6 +3,12 @@ use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
 use std::cell::{Cell, RefCell};
 
+use crate::headerbuttons::{HeaderButtonsControl, HeaderButtonsHandler};
+use crate::impl_header_buttons_control;
+use crate::window_bindings;
+
+impl_header_buttons_control!(EntryEdit, imp::EntryEdit);
+
 mod imp {
     use super::*;
 
@@ -24,6 +30,7 @@ mod imp {
         const NAME: &'static str = "EntryEdit";
         type Type = super::EntryEdit;
         type ParentType = gtk4::Box;
+        type Interfaces = (HeaderButtonsControl,);
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
@@ -74,6 +81,21 @@ mod imp {
             self.md_editor.replace(Some(md_editor.clone().into()));
             self.entry_edit_viewport.set_child(Some(&md_editor));
 
+            // Mark as having unsaved changes, like the original C implementation
+            self.unsaved_changes.set(true);
+
+            // Mark dirty whenever the buffer is edited
+            let buffer = md_editor
+                .upcast_ref::<gtk4::Widget>()
+                .downcast_ref::<gtk4::TextView>()
+                .expect("md_editor is not a TextView")
+                .buffer();
+            buffer.connect_changed(glib::clone!(
+                #[weak]
+                obj,
+                move |_| obj.imp().unsaved_changes.set(true)
+            ));
+
             // Read entry content
             obj.read_entry();
 
@@ -96,7 +118,7 @@ mod imp {
 glib::wrapper! {
     pub struct EntryEdit(ObjectSubclass<imp::EntryEdit>)
         @extends gtk4::Box, gtk4::Widget,
-        @implements gtk4::ConstraintTarget, gtk4::Buildable, gtk4::Accessible;
+        @implements HeaderButtonsControl, gtk4::ConstraintTarget, gtk4::Buildable, gtk4::Accessible;
 }
 
 impl EntryEdit {
@@ -211,8 +233,24 @@ impl EntryEdit {
         let md_image_link = format!("![{}](<{}>)", name, path);
         buffer.insert_at_cursor(&md_image_link);
     }
+}
 
-    pub fn on_back_pressed(&self) {
+impl HeaderButtonsHandler for EntryEdit {
+    fn on_enter(&self, new_button: &gtk4::Button, back_button: &gtk4::Button, settings_button: &gtk4::Button) {
+        // Same as the interface default: only the back button is useful here
+        new_button.set_visible(false);
+        back_button.set_visible(true);
+        settings_button.set_visible(false);
+    }
+
+    fn on_leave(&self, _new_button: &gtk4::Button, _back_button: &gtk4::Button, _settings_button: &gtk4::Button) {
+    }
+
+    fn on_new_pressed(&self) {
+    }
+
+    fn on_back_pressed(&self) {
         self.save_entry();
+        window_bindings::pop_view();
     }
 }

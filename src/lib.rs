@@ -1,5 +1,6 @@
 mod utils;
 mod utils_bindings;
+mod window_bindings;
 mod headerbuttons;
 mod headerbuttons_bindings;
 mod settings;

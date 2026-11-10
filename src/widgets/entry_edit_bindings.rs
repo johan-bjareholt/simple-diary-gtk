@@ -5,6 +5,7 @@ use glib::gobject_ffi;
 use glib::ffi::GType;
 
 use super::entry_edit::EntryEdit;
+use crate::headerbuttons::HeaderButtonsHandler;
 
 #[unsafe(no_mangle)]
 pub extern "C" fn entry_edit_get_type() -> GType {
@@ -39,5 +40,5 @@ pub unsafe extern "C" fn entry_edit_on_back_pressed(widget: *mut gtk4::ffi::GtkW
     let widget: gtk4::Widget = unsafe { FromGlibPtrNone::from_glib_none(widget) };
     let entry_edit = widget.downcast::<EntryEdit>().expect("Not an EntryEdit");
 
-    entry_edit.on_back_pressed();
+    HeaderButtonsHandler::on_back_pressed(&entry_edit);
 }
