@@ -7,7 +7,3 @@ summary = 'Simple and lightweight diary app'
 name = 'Simple Diary'
 
 subdir('res')
-
-if get_option('test').enabled()
-  subdir('test')
-endif
