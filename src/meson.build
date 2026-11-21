@@ -3,7 +3,6 @@ diary_src = [
 
   'headerbuttons.c',
   'main.c',
-  'notification.c',
   'utils.c',
   'window.c',
 
