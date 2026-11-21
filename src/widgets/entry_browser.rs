@@ -227,9 +227,7 @@ impl HeaderButtonsHandler for EntryBrowser {
             ),
         );
 
-        let window = window_bindings::instance()
-            .downcast::<gtk4::Window>()
-            .expect("diary window is not a GtkWindow");
+        let window: gtk4::Window = window_bindings::instance().upcast();
         dialog.open(&window);
     }
 

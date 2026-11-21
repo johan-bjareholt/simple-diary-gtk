@@ -78,6 +78,24 @@ glib::wrapper! {
     pub struct HeaderButtonsControl(ObjectInterface<iface::HeaderButtonsControl>);
 }
 
+/// Peek the `HeaderButtonsControl` interface of a widget, like the C code's
+/// `g_type_interface_peek (G_OBJECT_GET_CLASS (widget), DIARY_TYPE_HEADER_BUTTONS)`.
+pub(crate) fn peek_interface(widget: &gtk4::Widget) -> Option<&'static ffi::Interface> {
+    use glib::translate::IntoGlib;
+    unsafe {
+        let instance = widget.as_ptr() as *const glib::gobject_ffi::GTypeInstance;
+        let iface = glib::gobject_ffi::g_type_interface_peek(
+            (*instance).g_class as *mut std::ffi::c_void,
+            HeaderButtonsControl::static_type().into_glib(),
+        );
+        if iface.is_null() {
+            None
+        } else {
+            Some(&*(iface as *const ffi::Interface))
+        }
+    }
+}
+
 /// Trait implemented by widgets that want to handle header button events.
 /// Use together with [`impl_header_buttons_control!`].
 pub trait HeaderButtonsHandler {

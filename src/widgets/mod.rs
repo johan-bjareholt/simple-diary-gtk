@@ -1,4 +1,4 @@
-mod entry_browser;
+pub(crate) mod entry_browser;
 mod entry_browser_bindings;
 mod entry_list;
 mod entry_listing;
@@ -15,5 +15,5 @@ mod entry_view;
 mod entry_view_bindings;
 mod entry_delete_dialog;
 mod entry_delete_dialog_bindings;
-mod settings_view;
+pub(crate) mod settings_view;
 mod settings_view_bindings;

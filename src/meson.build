@@ -1,10 +1,8 @@
 diary_src = [
   gresources,
 
-  'headerbuttons.c',
   'main.c',
   'utils.c',
-  'window.c',
 
 ]
 
