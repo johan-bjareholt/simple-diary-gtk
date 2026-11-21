@@ -84,11 +84,11 @@ mod imp {
                 let name2 = row_entry(row2)
                     .property::<Option<String>>("filename")
                     .unwrap_or_default();
-                // Descending by filename
+                // Descending by filename (newest first), like -g_strcmp0(name1, name2)
                 match name2.cmp(&name1) {
-                    std::cmp::Ordering::Less => gtk4::Ordering::Larger,
+                    std::cmp::Ordering::Less => gtk4::Ordering::Smaller,
                     std::cmp::Ordering::Equal => gtk4::Ordering::Equal,
-                    std::cmp::Ordering::Greater => gtk4::Ordering::Smaller,
+                    std::cmp::Ordering::Greater => gtk4::Ordering::Larger,
                 }
             });
 
