@@ -1,7 +1,13 @@
 
-gresources = gnome.compile_resources(
-   'gresources',
-   'gresources.xml',
+glib_compile_resources = find_program('glib-compile-resources')
+
+gresource_bundle = custom_target(
+  'gresource-bundle',
+  input: 'gresources.xml',
+  output: 'gresources.gresource',
+  command: [glib_compile_resources, '--sourcedir', meson.current_source_dir(), '--target', '@OUTPUT@', '@INPUT@'],
+  install: true,
+  install_dir: get_option('datadir') / 'simple-diary',
 )
 
 conf_data = configuration_data()
