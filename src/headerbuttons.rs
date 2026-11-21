@@ -112,6 +112,10 @@ macro_rules! impl_header_buttons_control {
                 back_button: *mut gtk4::ffi::GtkButton,
                 settings_button: *mut gtk4::ffi::GtkButton,
             ) {
+                // The window's buttons may already be destroyed during shutdown
+                if widget.is_null() || new_button.is_null() || back_button.is_null() || settings_button.is_null() {
+                    return;
+                }
                 let widget_rs: Borrowed<gtk4::Widget> = unsafe { from_glib_borrow(widget) };
                 let new_button_rs: Borrowed<gtk4::Button> = unsafe { from_glib_borrow(new_button) };
                 let back_button_rs: Borrowed<gtk4::Button> = unsafe { from_glib_borrow(back_button) };
@@ -133,6 +137,10 @@ macro_rules! impl_header_buttons_control {
                 back_button: *mut gtk4::ffi::GtkButton,
                 settings_button: *mut gtk4::ffi::GtkButton,
             ) {
+                // The window's buttons may already be destroyed during shutdown
+                if widget.is_null() || new_button.is_null() || back_button.is_null() || settings_button.is_null() {
+                    return;
+                }
                 let widget_rs: Borrowed<gtk4::Widget> = unsafe { from_glib_borrow(widget) };
                 let new_button_rs: Borrowed<gtk4::Button> = unsafe { from_glib_borrow(new_button) };
                 let back_button_rs: Borrowed<gtk4::Button> = unsafe { from_glib_borrow(back_button) };
@@ -149,6 +157,9 @@ macro_rules! impl_header_buttons_control {
             }
 
             pub(crate) extern "C" fn on_new_pressed(widget: *mut gtk4::ffi::GtkWidget) {
+                if widget.is_null() {
+                    return;
+                }
                 let widget_rs: Borrowed<gtk4::Widget> = unsafe { from_glib_borrow(widget) };
 
                 if let Some(obj) = widget_rs.dynamic_cast_ref::<$widget>() {
@@ -157,6 +168,9 @@ macro_rules! impl_header_buttons_control {
             }
 
             pub(crate) extern "C" fn on_back_pressed(widget: *mut gtk4::ffi::GtkWidget) {
+                if widget.is_null() {
+                    return;
+                }
                 let widget_rs: Borrowed<gtk4::Widget> = unsafe { from_glib_borrow(widget) };
 
                 if let Some(obj) = widget_rs.dynamic_cast_ref::<$widget>() {
