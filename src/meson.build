@@ -6,7 +6,6 @@ diary_src = [
   'utils.c',
   'window.c',
 
-  'widgets/settings_view.c',
 ]
 
 diary_deps = [

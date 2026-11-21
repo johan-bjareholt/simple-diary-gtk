@@ -15,3 +15,5 @@ mod entry_view;
 mod entry_view_bindings;
 mod entry_delete_dialog;
 mod entry_delete_dialog_bindings;
+mod settings_view;
+mod settings_view_bindings;
