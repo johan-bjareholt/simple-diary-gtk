@@ -2,7 +2,6 @@ diary_src = [
   gresources,
 
   'main.c',
-  'utils.c',
 
 ]
 
